@@ -7,7 +7,7 @@ import java.util.List;
 public interface UserService {
 
     // Створення нового користувача (POST with BODY)
-    void create(User user);
+    User create(User user);
 
     // Отримання списку користувачів (GET)
     List<User> readAll();

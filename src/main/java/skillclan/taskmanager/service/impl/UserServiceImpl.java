@@ -15,16 +15,17 @@ public class UserServiceImpl implements UserService {
 
 
     // Зберігаємо користувачів в HashMap для швидкості та зручності
-    private static final Map<Integer, User> USERS = new HashMap<>();
+    private final Map<Integer, User> USERS = new HashMap<>();
 
     // Для генерації userId використовуємо потокобезпечний Integer
-    private static final AtomicInteger USER_ID_GENERATOR = new AtomicInteger();
+    private final AtomicInteger USER_ID_GENERATOR = new AtomicInteger();
 
     @Override
-    public void create(User user) {
+    public User create(User user) {
         final int userId = USER_ID_GENERATOR.incrementAndGet();
         user.setId(userId);
         USERS.put(userId, user);
+        return user;
     }
 
     @Override
