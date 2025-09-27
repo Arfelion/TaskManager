@@ -8,16 +8,16 @@ import java.util.List;
 public interface UserService {
 
     // Створення нового користувача (POST with BODY)
-    UserDto create(UserDto userDto);
+    User create(User user);
 
     // Отримання списку користувачів (GET)
-    List<UserDto> readAll();
+    List<User> readAll();
 
     // Отримання користувача по ID (GET with param)
-    UserDto read(int id);
+    User read(int id);
 
     // Оновлення даних інсуючого користувача по ID (PUT with BODY)
-    boolean update(UserDto userDto, int id);
+    boolean update(User user, int id);
 
     // Видалення існуючого користувача по ID (DELETE with param)
     boolean delete(int id);
