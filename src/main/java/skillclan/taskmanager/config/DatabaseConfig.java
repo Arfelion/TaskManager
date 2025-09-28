@@ -7,6 +7,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 @Configuration
 public class DatabaseConfig {
@@ -36,8 +38,11 @@ public class DatabaseConfig {
         config.setPassword(dbPassword);
         config.setMaximumPoolSize(poolSize);
         config.setMinimumIdle(5);
-        config.setPoolName("Task-Manager-Hikari-Pool");
+        config.setPoolName("TaskManager-Hikari-Pool");
 
         return new HikariDataSource(config);
+    }
+    public static Connection getConnection() throws SQLException {
+        throw new UnsupportedOperationException("Використовуємо DataSource замість getConnection");
     }
 }
