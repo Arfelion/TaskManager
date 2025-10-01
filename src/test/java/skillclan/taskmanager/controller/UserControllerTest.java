@@ -12,8 +12,7 @@ import skillclan.taskmanager.mapper.UserMapperImpl;
 import skillclan.taskmanager.model.User;
 import skillclan.taskmanager.service.UserService;
 
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -34,6 +33,7 @@ public class UserControllerTest {
         User user1 = new User();
         user1.setName("TestUserName1");
         user1.setEmail("test1@test.ua");
+
         User user2 = new User();
         user2.setId(10);
         user2.setName("TestUserName1");
@@ -42,7 +42,7 @@ public class UserControllerTest {
         when(userService.create(user1)).thenReturn(user2);
 
         mockMvc.perform(post("/users")
-                .content("""
+                .content("""                      
                         {
                           "name": "TestUserName1",
                           "email": "test1@test.ua"
@@ -57,6 +57,7 @@ public class UserControllerTest {
                           "email": "test1@test.ua"
                         }
                         """));
+
         verify(userService).create(user1);
 
     }

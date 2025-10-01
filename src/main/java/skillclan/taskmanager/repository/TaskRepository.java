@@ -1,5 +1,7 @@
 package skillclan.taskmanager.repository;
 
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.stereotype.Repository;
 import skillclan.taskmanager.model.Task;
 import skillclan.taskmanager.model.TaskStatus;
 
@@ -9,9 +11,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@Repository
 public class TaskRepository {
 
     private final DataSource dataSource;
+
+    //try this
+    private NamedParameterJdbcTemplate jdbcTemplate;
 
     public TaskRepository(DataSource dataSource){
         this.dataSource = dataSource;

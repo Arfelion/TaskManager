@@ -1,11 +1,13 @@
 package skillclan.taskmanager.service.impl;
 
+import org.springframework.stereotype.Service;
 import skillclan.taskmanager.model.Task;
 import skillclan.taskmanager.repository.TaskRepository;
 import skillclan.taskmanager.service.TaskService;
 
 import java.util.List;
 
+@Service
 public class TaskServiceImpl implements TaskService {
 
     private final TaskRepository taskRepository;
