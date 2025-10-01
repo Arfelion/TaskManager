@@ -22,7 +22,7 @@ import static org.mockito.Mockito.*;
 public class UserServiceImplTest {
 
     @Mock
-    UserRepository userRepository;
+    private UserRepository userRepository;
     @InjectMocks
     private UserServiceImpl userService;
 
@@ -30,23 +30,11 @@ public class UserServiceImplTest {
     private User user1;
     private User user11;
     private User user2;
-    private User userN;
-    private User userE;
-    private User userPN;
 
 
     @BeforeEach
     void setUp() {
         USERS = new ArrayList<>();
-
-        userN = new User();
-        userN.setName("NewTestUserName");
-
-        userE = new User();
-        userE.setEmail("NEWtest@test.com");
-
-        userPN = new User();
-        userPN.setPhoneNumber("380991234567");
 
         user1 = new User();
         user1.setEmail("test1@test.com");
@@ -72,7 +60,7 @@ public class UserServiceImplTest {
         User createdUser = userService.create(user1);
 
         assertEquals(user11, createdUser);
-        verify(userRepository, times(1)).create(user1);
+        verify(userRepository).create(user1);
     }
 
     @Test
@@ -83,8 +71,8 @@ public class UserServiceImplTest {
 
         List<User> allUsers = userService.readAll();
 
-        assertEquals(USERS, allUsers);
-        verify(userRepository, times(1)).findAll();
+        assertIterableEquals(USERS, allUsers);
+        verify(userRepository).findAll();
     }
 
     @Test
@@ -95,7 +83,7 @@ public class UserServiceImplTest {
 
         assertNotNull(foundUser1);
         assertEquals(foundUser1, user1);
-        verify(userRepository, times(1)).findById(10);
+        verify(userRepository).findById(10);
     }
 
     @Test
@@ -105,20 +93,21 @@ public class UserServiceImplTest {
         User foundUser = userService.read(Integer.MAX_VALUE);
 
         assertNull(foundUser);
-        verify(userRepository, times(1)).findById(Integer.MAX_VALUE);
+        verify(userRepository).findById(Integer.MAX_VALUE);
     }
 
     @Test
     void testFullUpdateExistingUser() {
         int ID = 10;
         when(userRepository.update(user2, ID)).thenReturn(true);
-        when(userRepository.findById(ID)).thenReturn(Optional.of(user11));
 
-        boolean results = userService.update(user2, 10);
+        User results = userService.update(user2, 10);
 
-        assertTrue(results);
-        verify(userRepository, times(1)).findById(ID);
-        verify(userRepository, times(1)).update(
+        assertEquals(10, results.getId());
+        assertEquals("TestUserName2", results.getName());
+        assertEquals("test2@test.com", results.getEmail());
+        assertEquals("380120000002", results.getPhoneNumber());
+        verify(userRepository).update(
                 argThat(updatedUser -> {
                     boolean isNameCorrect = updatedUser.getName().equals(user2.getName());
                     boolean isEmailCorrect = updatedUser.getEmail().equals(user2.getEmail());
@@ -127,56 +116,13 @@ public class UserServiceImplTest {
                 }), eq(ID));
     }
 
-    @Test
-    void testPartUpdateExistingUser() {
-        int ID = 10;
-        when(userRepository.update(any(), eq(ID))).thenReturn(true);
-        when(userRepository.findById(ID)).thenReturn(Optional.of(user11));
-
-        // Only Name
-        boolean resultsN = userService.update(userN, 10);
-        assertTrue(resultsN);
-        verify(userRepository, times(1)).findById(ID);
-        verify(userRepository, times(1)).update(
-                argThat(updatedUser -> {
-                    boolean isNameCorrect = updatedUser.getName().equals(userN.getName());
-                    boolean isEmailCorrect = updatedUser.getEmail().equals(user11.getEmail());
-                    boolean isPhoneNumberCorrect = updatedUser.getPhoneNumber().equals(user11.getPhoneNumber());
-                    return isNameCorrect && isEmailCorrect && isPhoneNumberCorrect;
-                }), eq(ID));
-
-        // Only Email
-        boolean resultsE = userService.update(userE, 10);
-        assertTrue(resultsE);
-        verify(userRepository, times(2)).findById(ID);
-        verify(userRepository, times(1)).update(
-                argThat(updatedUser -> {
-                    boolean isNameCorrect = updatedUser.getName().equals(user11.getName());
-                    boolean isEmailCorrect = updatedUser.getEmail().equals(userE.getEmail());
-                    boolean isPhoneNumberCorrect = updatedUser.getPhoneNumber().equals(user11.getPhoneNumber());
-                    return isNameCorrect && isEmailCorrect && isPhoneNumberCorrect;
-                }), eq(ID));
-
-        // Only PhoneNumber
-        boolean resultsPN = userService.update(userPN, 10);
-        assertTrue(resultsPN);
-        verify(userRepository, times(3)).findById(ID);
-        verify(userRepository, times(1)).update(
-                argThat(updatedUser -> {
-                    boolean isNameCorrect = updatedUser.getName().equals(user11.getName());
-                    boolean isEmailCorrect = updatedUser.getEmail().equals(user11.getEmail());
-                    boolean isPhoneNumberCorrect = updatedUser.getPhoneNumber().equals(userPN.getPhoneNumber());
-                    return isNameCorrect && isEmailCorrect && isPhoneNumberCorrect;
-                }), eq(ID));
-    }
 
     @Test
     void testUpdateNotExistingUser() {
-        when(userRepository.findById(Integer.MAX_VALUE)).thenReturn(Optional.empty());
-        boolean results = userService.update(user1, Integer.MAX_VALUE);
-        assertFalse(results);
-        verify(userRepository, times(1)).findById(Integer.MAX_VALUE);
-        verify(userRepository, times(0)).update(any(), eq(Integer.MAX_VALUE));
+        when(userRepository.update(user1, Integer.MAX_VALUE)).thenReturn(false);
+        User results = userService.update(user1, Integer.MAX_VALUE);
+        assertNull(results);
+        verify(userRepository).update(user1, Integer.MAX_VALUE);
     }
 
     @Test

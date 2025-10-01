@@ -1,10 +1,13 @@
 package skillclan.taskmanager.model;
 
+import java.util.List;
+
 public class User {
     private Integer id;
     private String name;
     private String email;
     private String phoneNumber;
+    private List<Task> tasks;
 
     public int getId() {
         return id;
@@ -36,5 +39,13 @@ public class User {
 
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
+    }
+
+    public List<Task> getTasks() {
+        return tasks;
+    }
+
+    public void setTasks(List<Task> tasks) {
+        this.tasks = tasks;
     }
 }

@@ -6,7 +6,6 @@ import skillclan.taskmanager.repository.UserRepository;
 import skillclan.taskmanager.service.UserService;
 
 import java.util.List;
-import java.util.Optional;
 
 
 @Service
@@ -34,22 +33,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean update(User user, int id) {
-        Optional<User> userOld = userRepository.findById(id);
-        if (userOld.isPresent()){
-            if (user.getName() == null || user.getName().isBlank()){
-                user.setName(userOld.get().getName());
-            }
-            if (user.getEmail() == null || user.getEmail().isBlank()){
-                user.setEmail(userOld.get().getEmail());
-            }
-            if (user.getPhoneNumber() == null || user.getPhoneNumber().isBlank()){
-                user.setPhoneNumber(userOld.get().getPhoneNumber());
-            }
-            return userRepository.update(user, id);
-        } else {
-            return false;
-        }
+    public User update(User user, int id) {
+        boolean updated = userRepository.update(user, id);
+        user.setId(id);
+        return updated ? user : null;
     }
 
     @Override

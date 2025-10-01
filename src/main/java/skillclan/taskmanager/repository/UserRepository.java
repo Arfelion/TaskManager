@@ -22,7 +22,7 @@ public class UserRepository {
         this.dataSource = dataSource;
     }
     public Optional<User> create(User user) {
-        String INSERT = "INSERT INTO users (name, email, phone_number) VALUES (?, ?, ?)";
+        final String INSERT = "INSERT INTO users (name, email, phone_number) VALUES (?, ?, ?)";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement(INSERT, Statement.RETURN_GENERATED_KEYS)){
             ps.setString(1, user.getName());
@@ -37,7 +37,7 @@ public class UserRepository {
                 }
             }
         } catch (SQLException e) {
-            System.out.println("Щось пішло не так під час підключення або виконання запиту створення в БД: " + e);
+            System.out.println("Щось пішло не так під час підключення або виконання запиту створення юзера в БД: " + e);
         }
         return Optional.empty();
     }
