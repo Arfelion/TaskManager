@@ -1,6 +1,8 @@
-
-{
-  "id": 10,
-  "name": "TestUserName1",
-  "email": "test1@test.ua"
-}
+[
+  {
+    "id": 10,
+    "name": "testName",
+    "email": "test@test.test",
+    "phoneNumber": "380991234567"
+  }
+]

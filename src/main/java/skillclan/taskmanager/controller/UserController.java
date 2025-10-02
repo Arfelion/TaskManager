@@ -8,6 +8,7 @@ import skillclan.taskmanager.mapper.UserMapper;
 import skillclan.taskmanager.model.User;
 import skillclan.taskmanager.service.UserService;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,7 +38,7 @@ public class UserController {
                 ? new ResponseEntity<>(users.stream()
                 .map(user -> userMapper.userToUserDto(user))
                 .collect(Collectors.toList()), HttpStatus.OK)
-                : new ResponseEntity<>(HttpStatus.NOT_FOUND);
+                : new ResponseEntity<>(new ArrayList<>(), HttpStatus.NOT_FOUND);
     }
 
     @GetMapping("/{id}")

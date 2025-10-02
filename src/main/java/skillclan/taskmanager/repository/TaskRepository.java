@@ -17,10 +17,11 @@ public class TaskRepository {
     private final DataSource dataSource;
 
     //try this
-    private NamedParameterJdbcTemplate jdbcTemplate;
+    private final NamedParameterJdbcTemplate jdbcTemplate;
 
-    public TaskRepository(DataSource dataSource){
+    public TaskRepository(DataSource dataSource, NamedParameterJdbcTemplate jdbcTemplate){
         this.dataSource = dataSource;
+        this.jdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
     }
 
     public Optional<Task> create(Task task){
