@@ -4,48 +4,59 @@ package skillclan.taskmanager.controller;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import skillclan.taskmanager.dto.TaskDto;
+import skillclan.taskmanager.mapper.TaskMapper;
 import skillclan.taskmanager.model.Task;
 import skillclan.taskmanager.service.impl.TaskServiceImpl;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/tasks")
 public class TaskController {
 
     private final TaskServiceImpl taskService;
+    private final TaskMapper taskMapper;
 
-    public TaskController(TaskServiceImpl taskService){
+    public TaskController(TaskServiceImpl taskService, TaskMapper taskMapper){
         this.taskService = taskService;
+        this.taskMapper = taskMapper;
     }
 
     @PostMapping
-    public ResponseEntity<Task> createTask(@RequestBody Task task){
-        return new ResponseEntity<>(taskService.create(task), HttpStatus.CREATED);
+    public ResponseEntity<TaskDto> createTask(@RequestBody TaskDto taskDto){
+        Task task = taskMapper.taskDtoToTask(taskDto);
+        Task createdTask = taskService.create(task);
+        return new ResponseEntity<>(taskMapper.taskToTaskDto(createdTask), HttpStatus.CREATED);
     }
 
     @GetMapping
-    public ResponseEntity<List<Task>> getAllTasks(){
+    public ResponseEntity<List<TaskDto>> getAllTasks(){
         final List<Task> tasks = taskService.readAll();
         return (tasks == null || tasks.isEmpty())
-                ? new ResponseEntity<>(HttpStatus.NOT_FOUND)
-                : new ResponseEntity<>(tasks, HttpStatus.OK);
+                ? new ResponseEntity<>(new ArrayList<>(), HttpStatus.NOT_FOUND)
+                : new ResponseEntity<>(tasks.stream()
+                .map(taskMapper::taskToTaskDto)
+                .collect(Collectors.toList()), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Task> getById(@PathVariable (name = "id") int id){
+    public ResponseEntity<TaskDto> getById(@PathVariable (name = "id") int id){
         Task task = taskService.read(id);
         return (task == null)
                 ? new ResponseEntity<>(HttpStatus.NOT_FOUND)
-                : new ResponseEntity<>(task, HttpStatus.OK);
+                : new ResponseEntity<>(taskMapper.taskToTaskDto(task), HttpStatus.OK);
     }
 
     @PutMapping("{id}")
-    public ResponseEntity<Task> updateTaskById(@RequestBody Task task, @PathVariable (name = "id") int id){
-            Task updatedTask = taskService.update(task, id);
+    public ResponseEntity<TaskDto> updateTaskById(@RequestBody TaskDto taskDto, @PathVariable (name = "id") int id){
+        Task task = taskMapper.taskDtoToTask(taskDto);
+        Task updatedTask = taskService.update(task, id);
         return (updatedTask == null)
                 ? new ResponseEntity<>(null, HttpStatus.NOT_FOUND)
-                : new ResponseEntity<>(updatedTask, HttpStatus.OK);
+                : new ResponseEntity<>(taskMapper.taskToTaskDto(updatedTask), HttpStatus.OK);
     }
 
     @DeleteMapping("{id}")

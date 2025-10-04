@@ -24,7 +24,7 @@ public class UserRepository {
     public Optional<User> create(User user) {
         final String INSERT = "INSERT INTO users (name, email, phone_number) VALUES (?, ?, ?)";
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement(INSERT, Statement.RETURN_GENERATED_KEYS)){
+            PreparedStatement ps = connection.prepareStatement(INSERT, Statement.RETURN_GENERATED_KEYS)){
             ps.setString(1, user.getName());
             ps.setString(2, user.getEmail());
             ps.setString(3, user.getPhoneNumber());
@@ -41,6 +41,7 @@ public class UserRepository {
         }
         return Optional.empty();
     }
+
     public Optional<User> findById(int id){
         final String SELECT = "SELECT id, email, name, phone_number FROM users WHERE id = ?";
         try (Connection connection = dataSource.getConnection();

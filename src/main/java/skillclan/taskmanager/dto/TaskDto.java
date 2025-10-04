@@ -1,13 +1,12 @@
-package skillclan.taskmanager.model;
+package skillclan.taskmanager.dto;
 
-import java.util.List;
+import skillclan.taskmanager.model.TaskStatus;
 
-public class Task {
+public class TaskDto {
     private Integer id;
     private String title;
     private String description;
     private TaskStatus status;
-    private List<User> users;
 
     public Integer getId() {
         return id;
@@ -39,13 +38,5 @@ public class Task {
 
     public void setStatus(TaskStatus status) {
         this.status = status;
-    }
-
-    public List<User> getUsers() {
-        return users;
-    }
-
-    public void setUsers(List<User> users) {
-        this.users = users;
     }
 }

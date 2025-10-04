@@ -14,4 +14,13 @@ public enum TaskStatus {
     public String getDbValue() {
         return dbValue;
     }
+
+    public static TaskStatus fromDbValue(String dbValue) {
+        for (TaskStatus value : TaskStatus.values()) {
+            if (value.dbValue.equals(dbValue)){
+                return value;
+            }
+        }
+        throw new IllegalArgumentException("Неіснуючий статус: " + dbValue);
+    }
 }

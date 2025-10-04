@@ -1,4 +1,4 @@
-package skillclan.taskmanager.testutils;
+package skillclan.taskmanager.testutils.user;
 
 import skillclan.taskmanager.model.User;
 

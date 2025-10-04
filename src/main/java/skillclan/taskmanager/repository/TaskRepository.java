@@ -1,6 +1,11 @@
 package skillclan.taskmanager.repository;
 
+import org.springframework.jdbc.core.SqlParameter;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import skillclan.taskmanager.model.Task;
 import skillclan.taskmanager.model.TaskStatus;
@@ -21,17 +26,37 @@ public class TaskRepository {
 
     public TaskRepository(DataSource dataSource, NamedParameterJdbcTemplate jdbcTemplate){
         this.dataSource = dataSource;
-        this.jdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     public Optional<Task> create(Task task){
+        final String INSERT = "INSERT INTO tasks (title, description, status) " +
+                              "VALUES (:title, :description, :status)";
+        KeyHolder keyHolder = new GeneratedKeyHolder(); // - Побачив у прикладі, але ніколи ще не використовував до цього
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("title", task.getTitle());
+        params.addValue("description", task.getDescription());
+        params.addValue("status", task.getStatus().getDbValue());
+        try {
+            jdbcTemplate.update(INSERT, params, keyHolder, new String[] {"id"});
+            if (keyHolder.getKey() != null) {
+                task.setId(keyHolder.getKey().intValue());
+                return Optional.of(task);
+            }
+        } catch (Exception e){
+            System.out.println("Щось пішло не так під час підключення або виконання запиту створення таски в БД: " + e);
+        }
+        return Optional.empty();
+    }
+
+    public Optional<Task> create2(Task task){
         final String INSERT = "INSERT INTO tasks (title, description, status) VALUES (?,?,?)";
-        try(Connection connection = dataSource.getConnection();
+        try (Connection connection = dataSource.getConnection();
             PreparedStatement ps = connection.prepareStatement(INSERT, PreparedStatement.RETURN_GENERATED_KEYS)){
             ps.setString(1, task.getTitle());
             ps.setString(2, task.getDescription());
             ps.setString(3, task.getStatus().getDbValue());
-            ps.executeQuery();
+            ps.executeUpdate();
 
             try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
@@ -39,8 +64,7 @@ public class TaskRepository {
                     return Optional.of(task);
                 }
             }
-        }
-        catch (SQLException e){
+        } catch (SQLException e){
             System.out.println("Щось пішло не так під час підключення або виконання запиту створення таски в БД: " + e);
         }
         return Optional.empty();
@@ -57,7 +81,7 @@ public class TaskRepository {
                 task.setId(rs.getInt("id"));
                 task.setTitle(rs.getString("title"));
                 task.setDescription(rs.getString("description"));
-                task.setStatus(TaskStatus.valueOf(rs.getString("status")));
+                task.setStatus(TaskStatus.fromDbValue(rs.getString("status")));
                 tasks.add(task);
             }
         } catch (SQLException e) {

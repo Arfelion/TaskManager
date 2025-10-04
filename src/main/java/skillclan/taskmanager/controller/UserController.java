@@ -27,35 +27,35 @@ public class UserController {
     @PostMapping
     public ResponseEntity<UserDto> createUser(@RequestBody UserDto userDto){
         User user = userMapper.userDtoToUser(userDto);
-        User user1 = userService.create(user);
-        return new ResponseEntity<>(userMapper.userToUserDto(user1), HttpStatus.CREATED);
+        User createdUser = userService.create(user);
+        return new ResponseEntity<>(userMapper.userToUserDto(createdUser), HttpStatus.CREATED);
     }
 
     @GetMapping
     public ResponseEntity<List<UserDto>> getAllUsers(){
         final List<User> users = userService.readAll();
-        return (users != null && !users.isEmpty())
-                ? new ResponseEntity<>(users.stream()
-                .map(user -> userMapper.userToUserDto(user))
-                .collect(Collectors.toList()), HttpStatus.OK)
-                : new ResponseEntity<>(new ArrayList<>(), HttpStatus.NOT_FOUND);
+        return (users == null || users.isEmpty())
+                ? new ResponseEntity<>(new ArrayList<>(), HttpStatus.NOT_FOUND)
+                : new ResponseEntity<>(users.stream()
+                .map(userMapper::userToUserDto)
+                .collect(Collectors.toList()), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<UserDto> getUserById(@PathVariable (name = "id") int id){
         final User user = userService.read(id);
-        return (user != null)
-            ? new ResponseEntity<>(userMapper.userToUserDto(user), HttpStatus.OK)
-            : new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        return (user == null)
+            ? new ResponseEntity<>(HttpStatus.NOT_FOUND)
+            : new ResponseEntity<>(userMapper.userToUserDto(user), HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<User> updateUserById(@RequestBody UserDto userDto, @PathVariable (name = "id") int id){
+    public ResponseEntity<UserDto> updateUserById(@RequestBody UserDto userDto, @PathVariable (name = "id") int id){
         User user = userMapper.userDtoToUser(userDto);
-        final User updated = userService.update(user, id);
-        return (updated != null)
-                ? new ResponseEntity<>(updated, HttpStatus.OK)
-                : new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        final User updatedUser = userService.update(user, id);
+        return (updatedUser == null)
+                ? new ResponseEntity<>(HttpStatus.NOT_FOUND)
+                : new ResponseEntity<>(userMapper.userToUserDto(updatedUser), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")

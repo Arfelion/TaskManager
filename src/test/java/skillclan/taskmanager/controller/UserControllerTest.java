@@ -4,13 +4,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.data.relational.core.sql.In;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import skillclan.taskmanager.mapper.UserMapperImpl;
 import skillclan.taskmanager.model.User;
 import skillclan.taskmanager.service.UserService;
-import skillclan.taskmanager.testutils.TestUser;
+import skillclan.taskmanager.testutils.user.TestUser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,22 +35,17 @@ public class UserControllerTest {
 
     @Test
     void testCreateUser_Success() throws Exception {
-        User user1 = new User();
-        user1.setName("TestUserName1");
-        user1.setEmail("test1@test.test");
-
-        User user2 = new User();
-        user2.setId(10);
-        user2.setName("TestUserName1");
-        user2.setEmail("test1@test.test");
+        User user1 = TestUser.getUserWithoutID();
+        User user2 = TestUser.getUser();
 
         when(userService.create(user1)).thenReturn(user2);
 
         mockMvc.perform(post("/users")
                 .content("""                      
                         {
-                          "name": "TestUserName1",
-                          "email": "test1@test.test"
+                          "name": "TestUserName",
+                          "email": "test@test.test",
+                          "phoneNumber": "380991234567"
                         }
                         """)
                 .header("Content-Type", "application/json"))
@@ -59,8 +53,9 @@ public class UserControllerTest {
                 .andExpect(content().json("""
                         {
                           "id": 10,
-                          "name": "TestUserName1",
-                          "email": "test1@test.test"
+                          "name": "TestUserName",
+                          "email": "test@test.test",
+                          "phoneNumber": "380991234567"
                         }
                         """));
 
