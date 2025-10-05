@@ -12,6 +12,7 @@ import skillclan.taskmanager.service.UserService;
 import skillclan.taskmanager.testutils.user.TestUser;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.Mockito.*;
@@ -27,6 +28,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers = UserController.class)
 public class UserControllerTest {
 
+    private static final Integer ID = 10;
+    private static final Integer NOT_EXISTING_ID = Integer.MAX_VALUE;
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -35,12 +39,12 @@ public class UserControllerTest {
 
     @Test
     void testCreateUser_Success() throws Exception {
-        User user1 = TestUser.getUserWithoutID();
-        User user2 = TestUser.getUser();
+        User requestUser = TestUser.getUserWithoutID();
+        User createdUser = TestUser.getUser();
 
-        when(userService.create(user1)).thenReturn(user2);
+        when(userService.create(requestUser)).thenReturn(createdUser);
 
-        mockMvc.perform(post("/users")
+        mockMvc.perform(post("/api/v1/users")
                 .content("""                      
                         {
                           "name": "TestUserName",
@@ -59,17 +63,15 @@ public class UserControllerTest {
                         }
                         """));
 
-        verify(userService).create(user1);
+        verify(userService).create(requestUser);
 
     }
 
     @Test
-    void testFindById_Success() throws Exception {
-        int ID = 10;
-
+    void testGetUserById_Success() throws Exception {
         when(userService.read(ID)).thenReturn(TestUser.getUser());
 
-        mockMvc.perform(get("/users/{id}", ID)
+        mockMvc.perform(get("/api/v1/users/{id}", ID)
                 .header("Content-Type", "application/json"))
                 .andExpect(status().isOk())
                 .andExpect(content().json("""
@@ -84,25 +86,23 @@ public class UserControllerTest {
     }
 
     @Test
-    void testFindById_UnSuccess() throws Exception {
-        int ID = Integer.MAX_VALUE;
+    void testGetUserById_UnSuccess() throws Exception {
+        when(userService.read(NOT_EXISTING_ID)).thenReturn(null);
 
-        when(userService.read(ID)).thenReturn(null);
-
-        mockMvc.perform(get("/users/" + Integer.MAX_VALUE)
+        mockMvc.perform(get("/api/v1/users/{NOT_EXISTING_ID}", NOT_EXISTING_ID)
                 .header("Content-Type", "application/json"))
                 .andExpect(status().isNotFound());
-        verify(userService).read(ID);
+        verify(userService).read(NOT_EXISTING_ID);
     }
 
     @Test
-    void testFindAll_Success() throws Exception {
+    void testGetAllUsers_Success() throws Exception {
         List<User> users = new ArrayList<>();
         users.add(TestUser.getUser());
 
         when(userService.readAll()).thenReturn(users);
 
-        mockMvc.perform(get("/users")
+        mockMvc.perform(get("/api/v1/users")
                 .header("Content-Type", "application/json"))
                 .andExpect(status().isOk())
                 .andExpect(content().json("""
@@ -120,16 +120,14 @@ public class UserControllerTest {
     }
 
     @Test
-    void testFindAll_UnSuccess() throws Exception {
-        List<User> users = new ArrayList<>();
+    void testGetAllUsers_UnSuccess() throws Exception {
+        when(userService.readAll()).thenReturn(Collections.emptyList());
 
-        when(userService.readAll()).thenReturn(users);
-
-        mockMvc.perform(get("/users")
+        mockMvc.perform(get("/api/v1/users")
                 .header("Content-Type", "application/json"))
-                .andExpect(status().isNotFound())
+                .andExpect(status().isOk())
                 .andExpect(content().json("""
-                        []                        ]
+                        []
                         """));
         verify(userService).readAll();
 
@@ -137,12 +135,11 @@ public class UserControllerTest {
 
     @Test
     void testUpdateUserById_Success() throws Exception {
-        int ID = 10;
         User user = TestUser.getUserWithoutID();
 
         when(userService.update(user, ID)).thenReturn(TestUser.getUser());
 
-        mockMvc.perform(put("/users/" + ID)
+        mockMvc.perform(put("/api/v1/users/{ID}", ID)
                  .content("""                      
                         {
                           "name": "TestUserName",
@@ -165,12 +162,11 @@ public class UserControllerTest {
 
     @Test
     void testUpdateUserById_UnSuccess() throws Exception {
-        int ID = Integer.MAX_VALUE;
         User user = TestUser.getUserWithoutID();
 
-        when(userService.update(user, ID)).thenReturn(null);
+        when(userService.update(user, NOT_EXISTING_ID)).thenReturn(null);
 
-        mockMvc.perform(put("/users/" + ID)
+        mockMvc.perform(put("/api/v1/users/{NOT_EXISTING_ID}", NOT_EXISTING_ID)
                 .content("""                      
                         {
                           "name": "TestUserName",
@@ -180,28 +176,24 @@ public class UserControllerTest {
                         """)
                 .header("Content-Type", "application/json"))
                 .andExpect(status().isNotFound());
-        verify(userService).update(user, ID);
+        verify(userService).update(user, NOT_EXISTING_ID);
     }
 
     @Test
     void testDeleteUserById_Success() throws Exception {
-        int ID = 10;
-
         when(userService.delete(ID)).thenReturn(true);
 
-        mockMvc.perform(delete("/users/" + ID)
+        mockMvc.perform(delete("/api/v1/users/{ID}", ID)
                 .header("Content-Type", "application/json"))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
     }
 
     @Test
     void testDeleteUserById_UnSuccess() throws Exception {
-        int ID = Integer.MAX_VALUE;
+        when(userService.delete(NOT_EXISTING_ID)).thenReturn(false);
 
-        when(userService.delete(ID)).thenReturn(false);
-
-        mockMvc.perform(delete("/users/" + ID)
+        mockMvc.perform(delete("/api/v1/users/{NOT_EXISTING_ID}", NOT_EXISTING_ID)
                         .header("Content-Type", "application/json"))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNoContent());
     }
 }
