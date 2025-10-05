@@ -22,9 +22,12 @@ public class UserRepository {
         this.dataSource = dataSource;
     }
     public Optional<User> create(User user) {
-        final String INSERT = "INSERT INTO users (name, email, phone_number) VALUES (?, ?, ?)";
+        final String sql = """
+                              INSERT INTO users (name, email, phone_number)
+                              VALUES (?, ?, ?)
+                              """;
         try (Connection connection = dataSource.getConnection();
-            PreparedStatement ps = connection.prepareStatement(INSERT, Statement.RETURN_GENERATED_KEYS)){
+            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)){
             ps.setString(1, user.getName());
             ps.setString(2, user.getEmail());
             ps.setString(3, user.getPhoneNumber());
@@ -43,9 +46,9 @@ public class UserRepository {
     }
 
     public Optional<User> findById(int id){
-        final String SELECT = "SELECT id, email, name, phone_number FROM users WHERE id = ?";
+        final String sql = "SELECT id, email, name, phone_number FROM users WHERE id = ?";
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement(SELECT, Statement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -64,11 +67,11 @@ public class UserRepository {
         return Optional.empty();
     }
     public List<User> findAll(){
-        final String SELECT = "SELECT id, email, name, phone_number FROM users";
+        final String sql = "SELECT id, email, name, phone_number FROM users";
         final List<User> users = new ArrayList<>();
         try(Connection connection = dataSource.getConnection();
         Statement s = connection.createStatement();
-        ResultSet rs = s.executeQuery(SELECT)){
+        ResultSet rs = s.executeQuery(sql)){
             while (rs.next()){
                 User user = new User();
                 user.setId(rs.getInt("id"));
@@ -84,9 +87,12 @@ public class UserRepository {
         return users;
     }
     public boolean update(User user, int id){
-        final String UPDATE = "UPDATE users SET name = ?, email = ?, phone_number = ? WHERE id = ?";
+        final String sql = """
+                              UPDATE users SET name = ?, email = ?, phone_number = ?
+                              WHERE id = ?
+                              """;
         try(Connection connection = dataSource.getConnection();
-        PreparedStatement ps = connection.prepareStatement(UPDATE)){
+        PreparedStatement ps = connection.prepareStatement(sql)){
            ps.setString(1, user.getName());
            ps.setString(2, user.getEmail());
            ps.setString(3, user.getPhoneNumber());
@@ -100,9 +106,9 @@ public class UserRepository {
         return false;
     }
     public boolean delete(int id){
-        final String DELETE = "DELETE FROM users WHERE id = ?";
+        final String sql = "DELETE FROM users WHERE id = ?";
         try(Connection connection = dataSource.getConnection();
-        PreparedStatement ps = connection.prepareStatement(DELETE)){
+        PreparedStatement ps = connection.prepareStatement(sql)){
             ps.setInt(1, id);
             int affectedRows = ps.executeUpdate();
             return affectedRows > 0;

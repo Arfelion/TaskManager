@@ -1,9 +1,7 @@
 package skillclan.taskmanager.repository;
 
-import org.springframework.jdbc.core.SqlParameter;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
@@ -30,52 +28,31 @@ public class TaskRepository {
     }
 
     public Optional<Task> create(Task task){
-        final String INSERT = "INSERT INTO tasks (title, description, status) " +
-                              "VALUES (:title, :description, :status)";
+        final String sql = """
+                              INSERT INTO tasks (title, description, status)
+                              VALUES (:title, :description, :status)
+                              """;
         KeyHolder keyHolder = new GeneratedKeyHolder(); // - Побачив у прикладі, але ніколи ще не використовував до цього
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("title", task.getTitle());
         params.addValue("description", task.getDescription());
         params.addValue("status", task.getStatus().getDbValue());
         try {
-            jdbcTemplate.update(INSERT, params, keyHolder, new String[] {"id"});
-            if (keyHolder.getKey() != null) {
-                task.setId(keyHolder.getKey().intValue());
-                return Optional.of(task);
-            }
+            jdbcTemplate.update(sql, params, keyHolder, new String[] {"id"});
+            task.setId(keyHolder.getKey().intValue());
+            return Optional.of(task);
         } catch (Exception e){
             System.out.println("Щось пішло не так під час підключення або виконання запиту створення таски в БД: " + e);
         }
         return Optional.empty();
     }
 
-    public Optional<Task> create2(Task task){
-        final String INSERT = "INSERT INTO tasks (title, description, status) VALUES (?,?,?)";
-        try (Connection connection = dataSource.getConnection();
-            PreparedStatement ps = connection.prepareStatement(INSERT, PreparedStatement.RETURN_GENERATED_KEYS)){
-            ps.setString(1, task.getTitle());
-            ps.setString(2, task.getDescription());
-            ps.setString(3, task.getStatus().getDbValue());
-            ps.executeUpdate();
-
-            try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    task.setId(generatedKeys.getInt(1));
-                    return Optional.of(task);
-                }
-            }
-        } catch (SQLException e){
-            System.out.println("Щось пішло не так під час підключення або виконання запиту створення таски в БД: " + e);
-        }
-        return Optional.empty();
-    }
-
     public List<Task> findAll() {
-        final String SELECT = "SELECT id, title, description, status FROM tasks";
+        final String sql = "SELECT id, title, description, status FROM tasks";
         final List<Task> tasks = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
              Statement s = connection.createStatement();
-             ResultSet rs = s.executeQuery(SELECT)) {
+             ResultSet rs = s.executeQuery(sql)) {
             while (rs.next()) {
                 Task task = new Task();
                 task.setId(rs.getInt("id"));
@@ -91,9 +68,12 @@ public class TaskRepository {
     }
 
     public Optional<Task> findById(int id){
-        final String SELECT = "SELECT id, title, description, status FROM tasks WHERE id = ?";
+        final String sql = """
+                              SELECT id, title, description, status FROM tasks
+                              WHERE id = ?
+                              """;
         try(Connection connection = dataSource.getConnection();
-        PreparedStatement ps = connection.prepareStatement(SELECT, Statement.RETURN_GENERATED_KEYS)){
+        PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)){
             ps.setInt(1, id);
             try(ResultSet rs = ps.executeQuery()) {
                 if(rs.next()){
@@ -113,9 +93,12 @@ public class TaskRepository {
     }
 
     public boolean update(Task task, int id){
-        final String UPDATE = "UPDATE tasks SET title = ?, description = ?, status = ? WHERE id = ?";
+        final String sql = """
+                              UPDATE tasks SET title = ?, description = ?, status = ?
+                              WHERE id = ?
+                              """;
         try(Connection connection = dataSource.getConnection();
-            PreparedStatement ps = connection.prepareStatement(UPDATE)){
+            PreparedStatement ps = connection.prepareStatement(sql)){
             ps.setString(1, task.getTitle());
             ps.setString(2, task.getDescription());
             ps.setString(3, task.getStatus().getDbValue());
@@ -130,9 +113,12 @@ public class TaskRepository {
     }
 
     public boolean delete(int id){
-        final String DELETE = "DELETE FROM tasks WHERE id = ?";
+        final String sql = """
+                              DELETE FROM tasks
+                              WHERE id = ?
+                              """;
         try(Connection connection = dataSource.getConnection();
-            PreparedStatement ps = connection.prepareStatement(DELETE)){
+            PreparedStatement ps = connection.prepareStatement(sql)){
             ps.setInt(1, id);
             int affectedRows = ps.executeUpdate();
             return affectedRows > 0;
