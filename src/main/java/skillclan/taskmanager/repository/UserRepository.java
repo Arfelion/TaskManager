@@ -1,119 +1,109 @@
 package skillclan.taskmanager.repository;
 
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import skillclan.taskmanager.model.User;
 
-import java.sql.SQLException;
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
 public class UserRepository {
 
-    private final DataSource dataSource;
+    private final NamedParameterJdbcTemplate jdbcTemplate;
 
-    public UserRepository(DataSource dataSource){
-        this.dataSource = dataSource;
+    private static final RowMapper<User> USER_ROW_MAPPER = (rs, rowCount) -> {
+        User user = new User();
+        user.setId(rs.getInt("id"));
+        user.setName(rs.getString("name"));
+        user.setEmail(rs.getString("email"));
+        user.setPhoneNumber(rs.getString("phone_number"));
+        return user;
+    };
+
+    public UserRepository(NamedParameterJdbcTemplate jdbcTemplate){
+        this.jdbcTemplate = jdbcTemplate;
     }
+
     public Optional<User> create(User user) {
         final String sql = """
-                              INSERT INTO users (name, email, phone_number)
-                              VALUES (?, ?, ?)
-                              """;
-        try (Connection connection = dataSource.getConnection();
-            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)){
-            ps.setString(1, user.getName());
-            ps.setString(2, user.getEmail());
-            ps.setString(3, user.getPhoneNumber());
-            ps.executeUpdate();
-
-            try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    user.setId(generatedKeys.getInt(1));
-                    return Optional.of(user);
-                }
-            }
-        } catch (SQLException e) {
+             INSERT INTO users (name, email, phone_number)
+             VALUES (:name, :email, :phone_number)
+             """;
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("name", user.getName());
+        params.addValue("email", user.getEmail());
+        params.addValue("phone_number", user.getPhoneNumber());
+        try {
+            jdbcTemplate.update(sql, params, keyHolder, new String[] {"id"});
+            user.setId(keyHolder.getKey().intValue());
+            return Optional.of(user);
+        } catch (Exception e) {
             System.out.println("Щось пішло не так під час підключення або виконання запиту створення юзера в БД: " + e);
         }
         return Optional.empty();
     }
 
     public Optional<User> findById(int id){
-        final String sql = "SELECT id, email, name, phone_number FROM users WHERE id = ?";
-        try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setInt(1, id);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    User user = new User();
-                    user.setId(rs.getInt("id"));
-                    user.setName(rs.getString("name"));
-                    user.setEmail(rs.getString("email"));
-                    user.setPhoneNumber(rs.getString(("phone_number")));
-                    return Optional.of(user);
-                }
-            }
+        final String sql = """
+             SELECT id, email, name, phone_number FROM users
+             WHERE id = ?
+             """;
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("id", id);
+        try {
+            User user = jdbcTemplate.queryForObject(sql, params, USER_ROW_MAPPER);
+            return Optional.ofNullable(user);
         }
-        catch (SQLException e){
+        catch (Exception e){
             System.out.println("Щось пішло не так під час пошуку користувача по ІД: " + e);
         }
         return Optional.empty();
     }
+
     public List<User> findAll(){
         final String sql = "SELECT id, email, name, phone_number FROM users";
-        final List<User> users = new ArrayList<>();
-        try(Connection connection = dataSource.getConnection();
-        Statement s = connection.createStatement();
-        ResultSet rs = s.executeQuery(sql)){
-            while (rs.next()){
-                User user = new User();
-                user.setId(rs.getInt("id"));
-                user.setName(rs.getString("name"));
-                user.setEmail(rs.getString("email"));
-                user.setPhoneNumber(rs.getString("phone_number"));
-                users.add(user);
-            }
+        try {
+            return jdbcTemplate.query(sql, Collections.emptyMap(), USER_ROW_MAPPER);
         }
-        catch (SQLException e){
+        catch (Exception e){
             System.out.println("Щось пішло не так під час отримання всіх покистувачів: " + e);
         }
-        return users;
+        return Collections.emptyList();
     }
+
     public boolean update(User user, int id){
         final String sql = """
-                              UPDATE users SET name = ?, email = ?, phone_number = ?
-                              WHERE id = ?
-                              """;
-        try(Connection connection = dataSource.getConnection();
-        PreparedStatement ps = connection.prepareStatement(sql)){
-           ps.setString(1, user.getName());
-           ps.setString(2, user.getEmail());
-           ps.setString(3, user.getPhoneNumber());
-           ps.setInt(4, id);
-           int affectedRows = ps.executeUpdate();
-           return affectedRows > 0;
+            UPDATE users SET name = :name, email = :email, phone_number = :phone_number
+            WHERE id = :id
+            """;
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("id", id);
+        try {
+           return jdbcTemplate.update(sql, params) > 0;
         }
-        catch (SQLException e){
+        catch (Exception e){
             System.out.println("Щось пішло не так під час оновлення користувача з ІД = " + id + ": " + e);
         }
         return false;
     }
     public boolean delete(int id){
-        final String sql = "DELETE FROM users WHERE id = ?";
-        try(Connection connection = dataSource.getConnection();
-        PreparedStatement ps = connection.prepareStatement(sql)){
-            ps.setInt(1, id);
-            int affectedRows = ps.executeUpdate();
-            return affectedRows > 0;
+        final String sql = """
+            DELETE FROM users
+            WHERE id = :id
+            """;
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("id", id);
+        try{
+            return jdbcTemplate.update(sql, params) > 0;
         }
-        catch (SQLException e){
+        catch (Exception e){
             System.out.println("Щось пішло не так під час видалення користувача з ІД = " + id + ": " + e);
         }
         return false;
