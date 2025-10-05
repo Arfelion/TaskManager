@@ -9,7 +9,6 @@ import skillclan.taskmanager.mapper.TaskMapper;
 import skillclan.taskmanager.model.Task;
 import skillclan.taskmanager.service.impl.TaskServiceImpl;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,8 +26,8 @@ public class TaskController {
 
     @PostMapping
     public ResponseEntity<TaskDto> createTask(@RequestBody TaskDto taskDto){
-        Task task = taskMapper.taskDtoToTask(taskDto);
-        Task createdTask = taskService.create(task);
+        final Task task = taskMapper.taskDtoToTask(taskDto);
+        final Task createdTask = taskService.create(task);
         return new ResponseEntity<>(taskMapper.taskToTaskDto(createdTask), HttpStatus.CREATED);
     }
 
@@ -42,7 +41,7 @@ public class TaskController {
 
     @GetMapping("/{id}")
     public ResponseEntity<TaskDto> getById(@PathVariable (name = "id") int id){
-        Task task = taskService.read(id);
+        final Task task = taskService.read(id);
         return (task == null) //Next time, this will be replaced with error handling
                 ? new ResponseEntity<>(HttpStatus.NOT_FOUND)
                 : new ResponseEntity<>(taskMapper.taskToTaskDto(task), HttpStatus.OK);
@@ -50,8 +49,8 @@ public class TaskController {
 
     @PutMapping("/{id}")
     public ResponseEntity<TaskDto> updateTaskById(@RequestBody TaskDto taskDto, @PathVariable (name = "id") int id){
-        Task task = taskMapper.taskDtoToTask(taskDto);
-        Task updatedTask = taskService.update(task, id);
+        final Task task = taskMapper.taskDtoToTask(taskDto);
+        final Task updatedTask = taskService.update(task, id);
         return (updatedTask == null) //Next time, this will be replaced with error handling
                 ? new ResponseEntity<>(null, HttpStatus.NOT_FOUND)
                 : new ResponseEntity<>(taskMapper.taskToTaskDto(updatedTask), HttpStatus.OK);

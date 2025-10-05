@@ -8,12 +8,11 @@ import skillclan.taskmanager.mapper.UserMapper;
 import skillclan.taskmanager.model.User;
 import skillclan.taskmanager.service.UserService;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/v1/tasks")
+@RequestMapping("/api/v1/users")
 public class UserController {
 
     private final UserService userService;
@@ -26,8 +25,8 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<UserDto> createUser(@RequestBody UserDto userDto){
-        User user = userMapper.userDtoToUser(userDto);
-        User createdUser = userService.create(user);
+        final User user = userMapper.userDtoToUser(userDto);
+        final User createdUser = userService.create(user);
         return new ResponseEntity<>(userMapper.userToUserDto(createdUser), HttpStatus.CREATED);
     }
 
@@ -49,7 +48,7 @@ public class UserController {
 
     @PutMapping("/{id}")
     public ResponseEntity<UserDto> updateUserById(@RequestBody UserDto userDto, @PathVariable (name = "id") int id){
-        User user = userMapper.userDtoToUser(userDto);
+        final User user = userMapper.userDtoToUser(userDto);
         final User updatedUser = userService.update(user, id);
         return (updatedUser == null) //Next time, this will be replaced with error handling
                 ? new ResponseEntity<>(HttpStatus.NOT_FOUND)
@@ -57,8 +56,8 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteUserById(@PathVariable (name = "id") int id){
-        final boolean deleted = userService.delete(id);
+    public ResponseEntity<Void> deleteUserById(@PathVariable (name = "id") int id){
+        userService.delete(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
