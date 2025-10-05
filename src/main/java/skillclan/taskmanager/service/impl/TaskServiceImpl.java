@@ -51,7 +51,7 @@ public class TaskServiceImpl implements TaskService {
         return taskRepository.delete(id);
     }
 
-    public Task assignTaskToUser(int taskId, int[] userIds) {
+    public Task assignTaskToUsers(int taskId, int[] userIds) {
         Task task = taskRepository.findById(taskId).orElse(null);
         List<User> users = new ArrayList<>();
         if(task == null){

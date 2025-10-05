@@ -66,7 +66,7 @@ public class TaskController {
 
     @PostMapping("/{id}/users")
     public ResponseEntity<TaskAssignDto> assignTaskToUser(@RequestBody int[] userIds, @PathVariable (name = "id") int taskId){
-        Task task = taskService.assignTaskToUser(taskId, userIds);
+        Task task = taskService.assignTaskToUsers(taskId, userIds);
         return new ResponseEntity<>(taskMapper.taskToTaskAssignDto(task), HttpStatus.OK);
     }
 }
