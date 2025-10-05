@@ -28,7 +28,7 @@ public class TaskRepository {
         task.setId(rs.getInt("id"));
         task.setTitle(rs.getString("title"));
         task.setDescription(rs.getString("description"));
-        task.setStatus(TaskStatus.fromDbValue(rs.getString("status")));
+        task.setStatus(TaskStatus.valueOf(rs.getString("status")));
         return task;
     };
 
@@ -46,7 +46,7 @@ public class TaskRepository {
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("title", task.getTitle());
         params.addValue("description", task.getDescription());
-        params.addValue("status", task.getStatus().getDbValue());
+        params.addValue("status", task.getStatus());
         try {
             jdbcTemplate.update(sql, params, keyHolder, new String[] {"id"});
             task.setId(keyHolder.getKey().intValue());
