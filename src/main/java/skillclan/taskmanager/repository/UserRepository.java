@@ -1,5 +1,8 @@
 package skillclan.taskmanager.repository;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -14,6 +17,8 @@ import java.util.Optional;
 
 @Repository
 public class UserRepository {
+
+    private static final Logger logger = LoggerFactory.getLogger(UserRepository.class);
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
@@ -44,8 +49,8 @@ public class UserRepository {
             jdbcTemplate.update(sql, params, keyHolder, new String[] {"id"});
             user.setId(keyHolder.getKey().intValue());
             return Optional.of(user);
-        } catch (Exception e) {
-            System.out.println("Щось пішло не так під час підключення або виконання запиту створення юзера в БД: " + e);
+        } catch (DataAccessException e){
+            logger.error("Failed to create user. SQL was: {}", sql, e);
         }
         return Optional.empty();
     }
@@ -60,9 +65,8 @@ public class UserRepository {
         try {
             User user = jdbcTemplate.queryForObject(sql, params, USER_ROW_MAPPER);
             return Optional.ofNullable(user);
-        }
-        catch (Exception e){
-            System.out.println("Щось пішло не так під час пошуку користувача по ІД: " + e);
+        } catch (DataAccessException e){
+            logger.error("Failed to retrieve user by id={}. SQL was: {}", id, sql, e);
         }
         return Optional.empty();
     }
@@ -71,9 +75,8 @@ public class UserRepository {
         final String sql = "SELECT id, email, name, phone_number FROM users";
         try {
             return jdbcTemplate.query(sql, Collections.emptyMap(), USER_ROW_MAPPER);
-        }
-        catch (Exception e){
-            System.out.println("Щось пішло не так під час отримання всіх покистувачів: " + e);
+        } catch (DataAccessException e){
+            logger.error("Failed to retrieve all users. SQL was: {}", sql, e);
         }
         return Collections.emptyList();
     }
@@ -85,11 +88,13 @@ public class UserRepository {
             """;
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("id", id);
+        params.addValue("name", user.getName());
+        params.addValue("email", user.getEmail());
+        params.addValue("phone_number", user.getPhoneNumber());
         try {
            return jdbcTemplate.update(sql, params) > 0;
-        }
-        catch (Exception e){
-            System.out.println("Щось пішло не так під час оновлення користувача з ІД = " + id + ": " + e);
+        } catch (DataAccessException e){
+            logger.error("Failed to update user by id={}. SQL was: {}", id, sql, e);
         }
         return false;
     }
@@ -102,9 +107,8 @@ public class UserRepository {
         params.addValue("id", id);
         try{
             return jdbcTemplate.update(sql, params) > 0;
-        }
-        catch (Exception e){
-            System.out.println("Щось пішло не так під час видалення користувача з ІД = " + id + ": " + e);
+        } catch (DataAccessException e){
+            logger.error("Failed to delete user by id={}. SQL was: {}", id, sql, e);
         }
         return false;
     }

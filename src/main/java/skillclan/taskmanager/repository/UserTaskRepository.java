@@ -1,11 +1,16 @@
 package skillclan.taskmanager.repository;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public class UserTaskRepository {
+
+    private static final Logger logger = LoggerFactory.getLogger(UserTaskRepository.class);
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
@@ -26,8 +31,8 @@ public class UserTaskRepository {
         params.addValue("task_id", taskId);
         try {
             return jdbcTemplate.update(sql, params) > 0;
-        } catch (Exception e){
-            System.out.println("Щось пішло не так під час підключення або виконання запиту назначення таски користувачу в БД: " + e);
+        } catch (DataAccessException e){
+            logger.error("Failed to assign taskId={} to userId={}. SQL was: {}", taskId, userId, sql, e);
         }
         return false;
     }
@@ -42,8 +47,8 @@ public class UserTaskRepository {
         params.addValue("task_id", taskId);
         try {
             return jdbcTemplate.update(sql, params) > 0;
-        } catch (Exception e){
-            System.out.println("Щось пішло не так під час підключення або виконання запиту звільнення користувача від таски в БД: " + e);
+        } catch (DataAccessException e){
+            logger.error("Failed to unassign taskId={} from userId={}. SQL was: {}", taskId, userId, sql, e);
         }
         return false;
     }
