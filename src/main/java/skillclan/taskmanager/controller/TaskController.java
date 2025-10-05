@@ -4,12 +4,14 @@ package skillclan.taskmanager.controller;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import skillclan.taskmanager.dto.TaskAssignDto;
 import skillclan.taskmanager.dto.TaskDto;
 import skillclan.taskmanager.mapper.TaskMapper;
 import skillclan.taskmanager.model.Task;
 import skillclan.taskmanager.service.impl.TaskServiceImpl;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -60,5 +62,11 @@ public class TaskController {
     public ResponseEntity<Void> deleteTaskById(@PathVariable (name = "id") int id){
         taskService.delete(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @PostMapping("/{id}/users")
+    public ResponseEntity<TaskAssignDto> assignTaskToUser(@RequestBody int[] userIds, @PathVariable (name = "id") int taskId){
+        Task task = taskService.assignTaskToUser(taskId, userIds);
+        return new ResponseEntity<>(taskMapper.taskToTaskAssignDto(task), HttpStatus.OK);
     }
 }

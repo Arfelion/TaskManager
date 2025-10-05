@@ -1,8 +1,11 @@
-package skillclan.taskmanager.model;
+package skillclan.taskmanager.dto;
+
+import skillclan.taskmanager.model.TaskStatus;
+import skillclan.taskmanager.model.User;
 
 import java.util.List;
 
-public class Task {
+public class TaskAssignDto {
     private Integer id;
     private String title;
     private String description;
