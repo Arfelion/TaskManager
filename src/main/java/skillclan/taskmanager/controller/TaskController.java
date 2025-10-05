@@ -35,9 +35,7 @@ public class TaskController {
     @GetMapping
     public ResponseEntity<List<TaskDto>> getAllTasks(){
         final List<Task> tasks = taskService.readAll();
-        return (tasks == null || tasks.isEmpty())
-                ? new ResponseEntity<>(Collections.emptyList(), HttpStatus.NOT_FOUND)
-                : new ResponseEntity<>(tasks.stream()
+        return new ResponseEntity<>(tasks.stream()
                 .map(taskMapper::taskToTaskDto)
                 .collect(Collectors.toList()), HttpStatus.OK);
     }
@@ -45,7 +43,7 @@ public class TaskController {
     @GetMapping("/{id}")
     public ResponseEntity<TaskDto> getById(@PathVariable (name = "id") int id){
         Task task = taskService.read(id);
-        return (task == null)
+        return (task == null) //Next time, this will be replaced with error handling
                 ? new ResponseEntity<>(HttpStatus.NOT_FOUND)
                 : new ResponseEntity<>(taskMapper.taskToTaskDto(task), HttpStatus.OK);
     }
@@ -54,7 +52,7 @@ public class TaskController {
     public ResponseEntity<TaskDto> updateTaskById(@RequestBody TaskDto taskDto, @PathVariable (name = "id") int id){
         Task task = taskMapper.taskDtoToTask(taskDto);
         Task updatedTask = taskService.update(task, id);
-        return (updatedTask == null)
+        return (updatedTask == null) //Next time, this will be replaced with error handling
                 ? new ResponseEntity<>(null, HttpStatus.NOT_FOUND)
                 : new ResponseEntity<>(taskMapper.taskToTaskDto(updatedTask), HttpStatus.OK);
     }
@@ -62,6 +60,6 @@ public class TaskController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTaskById(@PathVariable (name = "id") int id){
         taskService.delete(id);
-        return  new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

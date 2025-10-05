@@ -34,9 +34,7 @@ public class UserController {
     @GetMapping
     public ResponseEntity<List<UserDto>> getAllUsers(){
         final List<User> users = userService.readAll();
-        return (users == null || users.isEmpty())
-                ? new ResponseEntity<>(Collections.emptyList(), HttpStatus.NOT_FOUND)
-                : new ResponseEntity<>(users.stream()
+        return new ResponseEntity<>(users.stream()
                 .map(userMapper::userToUserDto)
                 .collect(Collectors.toList()), HttpStatus.OK);
     }
@@ -44,7 +42,7 @@ public class UserController {
     @GetMapping("/{id}")
     public ResponseEntity<UserDto> getUserById(@PathVariable (name = "id") int id){
         final User user = userService.read(id);
-        return (user == null)
+        return (user == null) //Next time, this will be replaced with error handling
             ? new ResponseEntity<>(HttpStatus.NOT_FOUND)
             : new ResponseEntity<>(userMapper.userToUserDto(user), HttpStatus.OK);
     }
@@ -53,7 +51,7 @@ public class UserController {
     public ResponseEntity<UserDto> updateUserById(@RequestBody UserDto userDto, @PathVariable (name = "id") int id){
         User user = userMapper.userDtoToUser(userDto);
         final User updatedUser = userService.update(user, id);
-        return (updatedUser == null)
+        return (updatedUser == null) //Next time, this will be replaced with error handling
                 ? new ResponseEntity<>(HttpStatus.NOT_FOUND)
                 : new ResponseEntity<>(userMapper.userToUserDto(updatedUser), HttpStatus.OK);
     }
@@ -61,8 +59,6 @@ public class UserController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteUserById(@PathVariable (name = "id") int id){
         final boolean deleted = userService.delete(id);
-        return  deleted
-                ? new ResponseEntity<>(HttpStatus.OK)
-                : new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
