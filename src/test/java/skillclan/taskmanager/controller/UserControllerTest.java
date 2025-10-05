@@ -69,7 +69,7 @@ public class UserControllerTest {
 
         when(userService.read(ID)).thenReturn(TestUser.getUser());
 
-        mockMvc.perform(get("/users/" + ID)
+        mockMvc.perform(get("/users/{id}", ID)
                 .header("Content-Type", "application/json"))
                 .andExpect(status().isOk())
                 .andExpect(content().json("""

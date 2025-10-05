@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/api/v1/tasks")
 public class UserController {
 
     private final UserService userService;

@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/tasks")
+@RequestMapping("/api/v1/tasks")
 public class TaskController {
 
     private final TaskServiceImpl taskService;
@@ -50,7 +50,7 @@ public class TaskController {
                 : new ResponseEntity<>(taskMapper.taskToTaskDto(task), HttpStatus.OK);
     }
 
-    @PutMapping("{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<TaskDto> updateTaskById(@RequestBody TaskDto taskDto, @PathVariable (name = "id") int id){
         Task task = taskMapper.taskDtoToTask(taskDto);
         Task updatedTask = taskService.update(task, id);
@@ -59,11 +59,9 @@ public class TaskController {
                 : new ResponseEntity<>(taskMapper.taskToTaskDto(updatedTask), HttpStatus.OK);
     }
 
-    @DeleteMapping("{id}")
-    public ResponseEntity<?> deleteTaskById(@PathVariable (name = "id") int id){
-        boolean deleted = taskService.delete(id);
-        return deleted
-                ? new ResponseEntity<>(HttpStatus.OK)
-                : new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteTaskById(@PathVariable (name = "id") int id){
+        taskService.delete(id);
+        return  new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
