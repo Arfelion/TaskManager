@@ -9,7 +9,7 @@ import skillclan.taskmanager.mapper.TaskMapper;
 import skillclan.taskmanager.model.Task;
 import skillclan.taskmanager.service.impl.TaskServiceImpl;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,7 +36,7 @@ public class TaskController {
     public ResponseEntity<List<TaskDto>> getAllTasks(){
         final List<Task> tasks = taskService.readAll();
         return (tasks == null || tasks.isEmpty())
-                ? new ResponseEntity<>(new ArrayList<>(), HttpStatus.NOT_FOUND)
+                ? new ResponseEntity<>(Collections.emptyList(), HttpStatus.NOT_FOUND)
                 : new ResponseEntity<>(tasks.stream()
                 .map(taskMapper::taskToTaskDto)
                 .collect(Collectors.toList()), HttpStatus.OK);
