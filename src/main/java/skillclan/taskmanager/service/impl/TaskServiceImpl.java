@@ -2,13 +2,12 @@ package skillclan.taskmanager.service.impl;
 
 import org.springframework.stereotype.Service;
 import skillclan.taskmanager.model.Task;
-import skillclan.taskmanager.model.User;
 import skillclan.taskmanager.repository.TaskRepository;
 import skillclan.taskmanager.repository.UserRepository;
 import skillclan.taskmanager.repository.UserTaskRepository;
 import skillclan.taskmanager.service.TaskService;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -52,18 +51,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     public Task assignTaskToUsers(int taskId, int[] userIds) {
-        Task task = taskRepository.findById(taskId).orElse(null);
-        List<User> users = new ArrayList<>();
-        if(task == null){
-            return null;
-        } else {
-            for (int id : userIds) {
-                if(userTaskRepository.assignTaskToUser(taskId, id)){
-                    users.add(userRepository.findById(id).orElse(null));
-                }
-            }
-            task.setAssignUsers(users);
-        }
-        return task;
+        Integer[] integerUserIds = Arrays.stream(userIds).boxed().toArray(Integer[]::new);
+        return userTaskRepository.assignTaskToUsers(taskId, integerUserIds).orElse(null);
     }
 }

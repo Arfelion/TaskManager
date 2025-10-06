@@ -6,6 +6,9 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
+import skillclan.taskmanager.model.Task;
+
+import java.util.*;
 
 @Repository
 public class UserTaskRepository {
@@ -35,6 +38,42 @@ public class UserTaskRepository {
             logger.error("Failed to assign taskId={} to userId={}. SQL was: {}", taskId, userId, sql, e);
         }
         return false;
+    }
+
+    public Optional<Task> assignTaskToUsers(Integer taskId, Integer[] userIds) {
+        final List<Integer> userIdList = Arrays.stream(userIds).toList();
+        final String insertSql = """
+            INSERT INTO user_tasks (user_id, task_id)
+            SELECT u.id, :taskId
+            FROM users u
+            WHERE u.id = ANY(:userIds)
+            ON CONFLICT (user_id, task_id) DO NOTHING;
+            """;
+        MapSqlParameterSource insertParams = new MapSqlParameterSource();
+        insertParams.addValue("user_ids", userIdList);
+        insertParams.addValue("task_id", taskId);
+        try {
+            jdbcTemplate.update(insertSql, insertParams);
+        } catch (DataAccessException e){
+            logger.error("Failed to assign taskId={} to userIds={}. SQL was: {}", taskId, userIds, insertSql, e);
+        }
+        final String sql = """
+            SELECT
+                t.id AS task_id, t.title, t.description, t.status,
+                u.id AS user_id, u.name, u.email, u.phone_number
+            FROM tasks t
+            LEFT JOIN user_tasks ut ON t.id = ut.task_id
+            LEFT JOIN users u ON ut.user_id = u.id
+            WHERE t.id = :taskId
+            """;
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("task_id", taskId);
+        try {
+            return Optional.ofNullable(jdbcTemplate.query(sql, params, new TaskUsersExtractor()));
+        } catch (Exception e){
+            logger.error("Failed to retrieve taskId={} with all assign users. SQL was: {}", taskId, sql, e);
+        }
+        return Optional.empty();
     }
 
     public boolean unassignTaskFromUser(Integer taskId, Integer userId) {
