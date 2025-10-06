@@ -11,7 +11,6 @@ import skillclan.taskmanager.model.Task;
 import skillclan.taskmanager.service.impl.TaskServiceImpl;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
