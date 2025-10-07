@@ -3,14 +3,11 @@ package skillclan.taskmanager.repository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import skillclan.taskmanager.model.Task;
-import skillclan.taskmanager.model.TaskStatus;
 
 import java.util.Collections;
 import java.util.List;
@@ -23,15 +20,6 @@ public class TaskRepository {
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
-    private static final RowMapper<Task> TASK_ROW_MAPPER = (rs, rowCount) -> {
-        Task task = new Task();
-        task.setId(rs.getInt("id"));
-        task.setTitle(rs.getString("title"));
-        task.setDescription(rs.getString("description"));
-        task.setStatus(TaskStatus.valueOf(rs.getString("status")));
-        return task;
-    };
-
     public TaskRepository(NamedParameterJdbcTemplate jdbcTemplate){
         this.jdbcTemplate = jdbcTemplate;
     }
@@ -40,16 +28,14 @@ public class TaskRepository {
         final String sql = """
             INSERT INTO tasks (title, description, status)
             VALUES (:title, :description, :status)
+            RETURNING id
             """;
-        logger.debug("Executing SQL: {}", sql);
-        KeyHolder keyHolder = new GeneratedKeyHolder();
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("title", task.getTitle());
         params.addValue("description", task.getDescription());
-        params.addValue("status", task.getStatus());
+        params.addValue("status", task.getStatus().name());
         try {
-            jdbcTemplate.update(sql, params, keyHolder, new String[] {"id"});
-            task.setId(keyHolder.getKey().intValue());
+            task.setId(jdbcTemplate.queryForObject(sql, params, Integer.class));
             return Optional.of(task);
         } catch (DataAccessException e){
             logger.error("Failed to create task. SQL was: {}", sql, e);
@@ -60,7 +46,7 @@ public class TaskRepository {
     public List<Task> findAll() {
         final String sql = "SELECT id, title, description, status FROM tasks";
         try {
-            return jdbcTemplate.query(sql, Collections.emptyMap(), TASK_ROW_MAPPER);
+            return jdbcTemplate.query(sql, Collections.emptyMap(), new BeanPropertyRowMapper<>(Task.class));
         } catch (DataAccessException e){
             logger.error("Failed to retrieve all tasks. SQL was: {}", sql, e);
         }
@@ -75,7 +61,7 @@ public class TaskRepository {
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("id", id);
         try {
-            Task task = jdbcTemplate.queryForObject(sql, params, TASK_ROW_MAPPER);
+            Task task = jdbcTemplate.queryForObject(sql, params, new BeanPropertyRowMapper<>(Task.class));
             return Optional.ofNullable(task);
         } catch (DataAccessException e){
             logger.error("Failed to retrieve task by id={}. SQL was: {}", id, sql, e);

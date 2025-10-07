@@ -15,4 +15,6 @@ public interface TaskService {
     Task update (Task task, int id);
 
     boolean delete(int id);
+
+    Task assignTaskToUsers(int taskId, int[] userIds);
 }

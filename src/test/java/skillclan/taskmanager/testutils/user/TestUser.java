@@ -5,7 +5,6 @@ import skillclan.taskmanager.model.User;
 public final class TestUser {
 
     private TestUser(){
-        System.out.println("Не можна створювати екземпляр утилітного класу TestUser");
     }
 
     public static User getUser(){

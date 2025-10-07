@@ -3,11 +3,9 @@ package skillclan.taskmanager.repository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import skillclan.taskmanager.model.User;
 
@@ -22,15 +20,6 @@ public class UserRepository {
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
-    private static final RowMapper<User> USER_ROW_MAPPER = (rs, rowCount) -> {
-        User user = new User();
-        user.setId(rs.getInt("id"));
-        user.setName(rs.getString("name"));
-        user.setEmail(rs.getString("email"));
-        user.setPhoneNumber(rs.getString("phone_number"));
-        return user;
-    };
-
     public UserRepository(NamedParameterJdbcTemplate jdbcTemplate){
         this.jdbcTemplate = jdbcTemplate;
     }
@@ -39,15 +28,14 @@ public class UserRepository {
         final String sql = """
              INSERT INTO users (name, email, phone_number)
              VALUES (:name, :email, :phone_number)
+             RETURNING id
              """;
-        KeyHolder keyHolder = new GeneratedKeyHolder();
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("name", user.getName());
         params.addValue("email", user.getEmail());
         params.addValue("phone_number", user.getPhoneNumber());
         try {
-            jdbcTemplate.update(sql, params, keyHolder, new String[] {"id"});
-            user.setId(keyHolder.getKey().intValue());
+            user.setId(jdbcTemplate.queryForObject(sql, params, Integer.class));
             return Optional.of(user);
         } catch (DataAccessException e){
             logger.error("Failed to create user. SQL was: {}", sql, e);
@@ -58,12 +46,12 @@ public class UserRepository {
     public Optional<User> findById(int id){
         final String sql = """
              SELECT id, email, name, phone_number FROM users
-             WHERE id = ?
+             WHERE id = :id
              """;
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("id", id);
         try {
-            User user = jdbcTemplate.queryForObject(sql, params, USER_ROW_MAPPER);
+            User user = jdbcTemplate.queryForObject(sql, params, new BeanPropertyRowMapper<>(User.class));
             return Optional.ofNullable(user);
         } catch (DataAccessException e){
             logger.error("Failed to retrieve user by id={}. SQL was: {}", id, sql, e);
@@ -74,7 +62,7 @@ public class UserRepository {
     public List<User> findAll(){
         final String sql = "SELECT id, email, name, phone_number FROM users";
         try {
-            return jdbcTemplate.query(sql, Collections.emptyMap(), USER_ROW_MAPPER);
+            return jdbcTemplate.query(sql, Collections.emptyMap(), new BeanPropertyRowMapper<>(User.class));
         } catch (DataAccessException e){
             logger.error("Failed to retrieve all users. SQL was: {}", sql, e);
         }

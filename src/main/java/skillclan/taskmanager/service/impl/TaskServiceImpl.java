@@ -3,7 +3,6 @@ package skillclan.taskmanager.service.impl;
 import org.springframework.stereotype.Service;
 import skillclan.taskmanager.model.Task;
 import skillclan.taskmanager.repository.TaskRepository;
-import skillclan.taskmanager.repository.UserRepository;
 import skillclan.taskmanager.repository.UserTaskRepository;
 import skillclan.taskmanager.service.TaskService;
 
@@ -15,12 +14,10 @@ public class TaskServiceImpl implements TaskService {
 
     private final TaskRepository taskRepository;
     private final UserTaskRepository userTaskRepository;
-    private final UserRepository userRepository;
 
-    public TaskServiceImpl(TaskRepository taskRepository, UserTaskRepository userTaskRepository, UserRepository userRepository){
+    public TaskServiceImpl(TaskRepository taskRepository, UserTaskRepository userTaskRepository){
         this.taskRepository = taskRepository;
         this.userTaskRepository = userTaskRepository;
-        this.userRepository = userRepository;
     }
 
     @Override

@@ -8,7 +8,7 @@ import skillclan.taskmanager.dto.TaskAssignDto;
 import skillclan.taskmanager.dto.TaskDto;
 import skillclan.taskmanager.mapper.TaskMapper;
 import skillclan.taskmanager.model.Task;
-import skillclan.taskmanager.service.impl.TaskServiceImpl;
+import skillclan.taskmanager.service.TaskService;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,10 +17,10 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/v1/tasks")
 public class TaskController {
 
-    private final TaskServiceImpl taskService;
+    private final TaskService taskService;
     private final TaskMapper taskMapper;
 
-    public TaskController(TaskServiceImpl taskService, TaskMapper taskMapper){
+    public TaskController(TaskService taskService, TaskMapper taskMapper){
         this.taskService = taskService;
         this.taskMapper = taskMapper;
     }

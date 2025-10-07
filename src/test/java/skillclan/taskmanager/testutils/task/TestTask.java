@@ -6,7 +6,6 @@ import skillclan.taskmanager.model.TaskStatus;
 public final class TestTask {
 
     private TestTask(){
-        System.out.println("Не можна створювати екземпляр утилітного класу TestTask");
     }
 
     public static Task getTask(){
