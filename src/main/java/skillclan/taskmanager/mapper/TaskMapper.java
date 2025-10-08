@@ -3,7 +3,6 @@ package skillclan.taskmanager.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.NullValueCheckStrategy;
-import skillclan.taskmanager.dto.TaskAssignDto;
 import skillclan.taskmanager.dto.TaskDto;
 import skillclan.taskmanager.model.Task;
 
@@ -14,7 +13,5 @@ public interface TaskMapper {
 
     @Mapping(target = "id", ignore = true)
     Task taskDtoToTask(TaskDto taskDto);
-
-    TaskAssignDto taskToTaskAssignDto(Task task);
 
 }

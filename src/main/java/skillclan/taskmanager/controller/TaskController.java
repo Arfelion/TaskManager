@@ -4,7 +4,6 @@ package skillclan.taskmanager.controller;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import skillclan.taskmanager.dto.TaskAssignDto;
 import skillclan.taskmanager.dto.TaskDto;
 import skillclan.taskmanager.mapper.TaskMapper;
 import skillclan.taskmanager.model.Task;
@@ -64,8 +63,8 @@ public class TaskController {
     }
 
     @PostMapping("/{id}/users")
-    public ResponseEntity<TaskAssignDto> assignTaskToUsers(@RequestBody int[] userIds, @PathVariable (name = "id") int taskId){
+    public ResponseEntity<TaskDto> assignTaskToUsers(@RequestBody int[] userIds, @PathVariable (name = "id") int taskId){
         Task task = taskService.assignTaskToUsers(taskId, userIds);
-        return new ResponseEntity<>(taskMapper.taskToTaskAssignDto(task), HttpStatus.OK);
+        return new ResponseEntity<>(taskMapper.taskToTaskDto(task), HttpStatus.OK);
     }
 }

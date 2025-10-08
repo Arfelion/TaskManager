@@ -3,7 +3,6 @@ package skillclan.taskmanager.service.impl;
 import org.springframework.stereotype.Service;
 import skillclan.taskmanager.model.Task;
 import skillclan.taskmanager.repository.TaskRepository;
-import skillclan.taskmanager.repository.UserTaskRepository;
 import skillclan.taskmanager.service.TaskService;
 
 import java.util.Arrays;
@@ -13,11 +12,9 @@ import java.util.List;
 public class TaskServiceImpl implements TaskService {
 
     private final TaskRepository taskRepository;
-    private final UserTaskRepository userTaskRepository;
 
-    public TaskServiceImpl(TaskRepository taskRepository, UserTaskRepository userTaskRepository){
+    public TaskServiceImpl(TaskRepository taskRepository){
         this.taskRepository = taskRepository;
-        this.userTaskRepository = userTaskRepository;
     }
 
     @Override
@@ -29,6 +26,11 @@ public class TaskServiceImpl implements TaskService {
     public List<Task> readAll() {
         return taskRepository.findAll();
     }
+
+//    @Override
+//    public Task read(int id) {
+//        return taskRepository.findById(new int[id]).orElse(null);
+//    }
 
     @Override
     public Task read(int id) {
@@ -49,6 +51,8 @@ public class TaskServiceImpl implements TaskService {
 
     public Task assignTaskToUsers(int taskId, int[] userIds) {
         Integer[] integerUserIds = Arrays.stream(userIds).boxed().toArray(Integer[]::new);
-        return userTaskRepository.assignTaskToUsers(taskId, integerUserIds).orElse(null);
+        return taskRepository.assignTaskToUsers(taskId, integerUserIds) // тут проблема. Якщо юзери вже назначені на таски раніше то поверне null - потрібно обговорити
+                ? taskRepository.findById(taskId).orElse(null)
+                : null;
     }
 }
