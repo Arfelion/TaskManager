@@ -135,9 +135,10 @@ public class UserControllerTest {
 
     @Test
     void testUpdateUserById_Success() throws Exception {
-        User user = TestUser.getUserWithoutID();
+        User requestUser = TestUser.getUserWithoutID();
+        User createdUser = TestUser.getUser();
 
-        when(userService.update(user, ID)).thenReturn(TestUser.getUser());
+        when(userService.update(requestUser, ID)).thenReturn(createdUser);
 
         mockMvc.perform(put("/api/v1/users/{ID}", ID)
                  .content("""                      
@@ -157,7 +158,7 @@ public class UserControllerTest {
                           "phoneNumber": "380991234567"
                         }
                         """));
-        verify(userService).update(user, ID);
+        verify(userService).update(requestUser, ID);
     }
 
     @Test
@@ -193,7 +194,7 @@ public class UserControllerTest {
         when(userService.delete(NOT_EXISTING_ID)).thenReturn(false);
 
         mockMvc.perform(delete("/api/v1/users/{NOT_EXISTING_ID}", NOT_EXISTING_ID)
-                        .header("Content-Type", "application/json"))
+                .header("Content-Type", "application/json"))
                 .andExpect(status().isNoContent());
     }
 }

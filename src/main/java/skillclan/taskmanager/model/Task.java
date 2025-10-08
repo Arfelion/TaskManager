@@ -1,6 +1,7 @@
 package skillclan.taskmanager.model;
 
 import java.util.List;
+import java.util.Objects;
 
 public class Task {
     private Integer id;
@@ -47,5 +48,18 @@ public class Task {
 
     public void setAssignUsers(List<User> assignUsers) {
         this.assignUsers = assignUsers;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Task task = (Task) o;
+        return Objects.equals(id, task.id) && Objects.equals(title, task.title) && Objects.equals(description, task.description) && status == task.status && Objects.equals(assignUsers, task.assignUsers);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, title, description, status, assignUsers);
     }
 }

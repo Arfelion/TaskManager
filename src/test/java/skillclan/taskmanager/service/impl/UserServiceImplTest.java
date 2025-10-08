@@ -41,15 +41,12 @@ public class UserServiceImplTest {
 
     @Test
     void testReadAllUsers(){
-        List<User> USERS = new ArrayList<>();
-        User user = TestUser.getUser();
-        USERS.add(user);
+        List<User> users = new ArrayList<>();
+        users.add(TestUser.getUser());
 
-        when(userRepository.findAll()).thenReturn(USERS);
+        when(userRepository.findAll()).thenReturn(users);
 
-        List<User> allUsers = userService.readAll();
-
-        assertIterableEquals(USERS, allUsers);
+        assertIterableEquals(users, userService.readAll());
         verify(userRepository).findAll();
     }
 
@@ -68,29 +65,27 @@ public class UserServiceImplTest {
     void testReadNotExistingUser() {
         when(userRepository.findById(NOT_EXISTING_ID)).thenReturn(Optional.empty());
 
-        User foundUser = userService.read(NOT_EXISTING_ID);
-
-        assertNull(foundUser);
+        assertNull(userService.read(NOT_EXISTING_ID));
         verify(userRepository).findById(NOT_EXISTING_ID);
     }
 
     @Test
-    void testFullUpdateExistingUser() {
-        User user = TestUser.getUserWithoutID();
+    void testUpdateExistingUser() {
+        User requestUser = TestUser.getUserWithoutID();
 
-        when(userRepository.update(user, ID)).thenReturn(true);
+        when(userRepository.update(requestUser, ID)).thenReturn(true);
 
-        User results = userService.update(user, ID);
+        User updatedUser = userService.update(requestUser, ID);
 
-        assertEquals(10, results.getId());
-        assertEquals("TestUserName", results.getName());
-        assertEquals("test@test.test", results.getEmail());
-        assertEquals("380991234567", results.getPhoneNumber());
+        assertEquals(10, updatedUser.getId());
+        assertEquals("TestUserName", updatedUser.getName());
+        assertEquals("test@test.test", updatedUser.getEmail());
+        assertEquals("380991234567", updatedUser.getPhoneNumber());
         verify(userRepository).update(
-                argThat(updatedUser -> {
-                    boolean isNameCorrect = updatedUser.getName().equals(user.getName());
-                    boolean isEmailCorrect = updatedUser.getEmail().equals(user.getEmail());
-                    boolean isPhoneNumberCorrect = updatedUser.getPhoneNumber().equals(user.getPhoneNumber());
+                argThat(user -> {
+                    boolean isNameCorrect = updatedUser.getName().equals(requestUser.getName());
+                    boolean isEmailCorrect = updatedUser.getEmail().equals(requestUser.getEmail());
+                    boolean isPhoneNumberCorrect = updatedUser.getPhoneNumber().equals(requestUser.getPhoneNumber());
                     return isNameCorrect && isEmailCorrect && isPhoneNumberCorrect;
                 }), eq(ID));
     }
@@ -101,7 +96,9 @@ public class UserServiceImplTest {
         User user = TestUser.getUserWithoutID();
 
         when(userRepository.update(user, NOT_EXISTING_ID)).thenReturn(false);
+
         User results = userService.update(user, NOT_EXISTING_ID);
+
         assertNull(results);
         verify(userRepository).update(user, NOT_EXISTING_ID);
     }

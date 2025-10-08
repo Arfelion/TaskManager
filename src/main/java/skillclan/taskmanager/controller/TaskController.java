@@ -40,7 +40,7 @@ public class TaskController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TaskDto> getById(@PathVariable (name = "id") int id){
+    public ResponseEntity<TaskDto> getTaskById(@PathVariable (name = "id") int id){
         final Task task = taskService.read(id);
         return (task == null) //Next time, this will be replaced with error handling
                 ? new ResponseEntity<>(HttpStatus.NOT_FOUND)
