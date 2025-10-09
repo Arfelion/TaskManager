@@ -39,9 +39,9 @@ public class TaskServiceImpl implements TaskService {
         if (partUpdatedTask == null){
             return null; // Якщо таску не знайшло = її не існує - нічого апдейтити не потрібно =)
         }
-        if (partUpdatedTask.getStatus() == task.getStatus() &&
-            partUpdatedTask.getTitle().equals(task.getTitle()) &&
-            partUpdatedTask.getDescription().equals(task.getDescription())
+        if (partUpdatedTask.getStatus() != task.getStatus() ||
+            !partUpdatedTask.getTitle().equals(task.getTitle()) ||
+            !partUpdatedTask.getDescription().equals(task.getDescription())
         ){
             taskRepository.update(task, id); //Апдейтимо "звичайні" поля таски в БД якщо є зміни
         }
