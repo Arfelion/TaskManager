@@ -47,7 +47,7 @@ public class TaskControllerTest {
                 .content("""                      
                         {
                           "title": "TestTaskTitle",
-                          "status": "IN_PROGRESS",
+                          "status": "NEW",
                           "description": "This is a description of the test task"
                         }
                         """)
@@ -57,7 +57,7 @@ public class TaskControllerTest {
                         {
                           "id": 10,
                           "title": "TestTaskTitle",
-                          "status": "IN_PROGRESS",
+                          "status": "NEW",
                           "description": "This is a description of the test task"
                         }
                         """));
@@ -80,7 +80,7 @@ public class TaskControllerTest {
                           {
                             "id": 10,
                             "title": "TestTaskTitle",
-                            "status": "IN_PROGRESS",
+                            "status": "NEW",
                             "description": "This is a description of the test task"
                           }
                         ]
@@ -116,7 +116,7 @@ public class TaskControllerTest {
                           {
                             "id": 10,
                             "title": "TestTaskTitle",
-                            "status": "IN_PROGRESS",
+                            "status": "NEW",
                             "description": "This is a description of the test task"
                           }
                         """));
@@ -146,7 +146,7 @@ public class TaskControllerTest {
                 .content("""
                         {
                           "title": "TestTaskTitle",
-                          "status": "IN_PROGRESS",
+                          "status": "NEW",
                           "description": "This is a description of the test task"
                         }
                         """)
@@ -156,7 +156,7 @@ public class TaskControllerTest {
                         {
                           "id": 10,
                           "title": "TestTaskTitle",
-                          "status": "IN_PROGRESS",
+                          "status": "NEW",
                           "description": "This is a description of the test task"
                         }
                         """));
@@ -174,7 +174,7 @@ public class TaskControllerTest {
                         .content("""
                         {
                           "title": "TestTaskTitle",
-                          "status": "IN_PROGRESS",
+                          "status": "NEW",
                           "description": "This is a description of the test task"
                         }
                         """)
