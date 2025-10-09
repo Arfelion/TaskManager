@@ -46,14 +46,15 @@ public class TaskServiceImpl implements TaskService {
         /* Якщо є newUsersToAssign, які відсутні в oldAssignedUsers (з БД)
            і в результаті їх асайну (affectedRows <= 0) (таких користувачів не існує)
            повертаємо таску, яку ми отримали з БД */
+        boolean isAssignedNewUsers;
         if (!oldAssignedUsers.containsAll(newUsersToAssign)){
-            taskRepository.assignTaskToUsers(id, new ArrayList<>(newUsersToAssign))
+            isAssignedNewUsers = taskRepository.assignTaskToUsers(id, new ArrayList<>(newUsersToAssign));
         }
-        boolean isUnassign = true;
+        boolean isUnassignOldUsers = true;
         if (!newUsersToAssign.containsAll(oldAssignedUsers)) {
-            isUnassign = taskRepository.unassignOtherUsersFromTask(id, new ArrayList<>(newUsersToAssign));
+            isUnassignOldUsers = taskRepository.unassignOtherUsersFromTask(id, new ArrayList<>(newUsersToAssign));
         }
-        //В залежності вір реалізації і того що ми хочемо віддати тут можуть бути різні варіанти
+        //В залежності вір реалізації і того що ми хочемо віддати тут можуть бути різні варіанти (isAssignedNewUsers та isUnassignOldUsers - чи додали/видалили користувачів)
         task.setId(id);
         return  task;
     }
