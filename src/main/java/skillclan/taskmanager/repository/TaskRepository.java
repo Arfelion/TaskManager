@@ -122,23 +122,6 @@ public class TaskRepository {
             logger.error("Failed to assign taskId={} to userIds={}. SQL was: {}", taskId, userIdList, sql, e);
         }
         return false;
-//        final String sql = """
-//            SELECT
-//                t.id AS task_id, t.title, t.description, t.status,
-//                u.id AS user_id, u.name, u.email, u.phone_number
-//            FROM tasks t
-//            LEFT JOIN user_tasks ut ON t.id = ut.task_id
-//            LEFT JOIN users u ON ut.user_id = u.id
-//            WHERE t.id = :taskId
-//            """;
-//        MapSqlParameterSource params = new MapSqlParameterSource();
-//        params.addValue("task_id", taskId);
-//        try {
-//            return Optional.ofNullable(jdbcTemplate.query(sql, params, new TaskUsersExtractor()));
-//        } catch (Exception e){
-//            logger.error("Failed to retrieve taskId={} with all assign users. SQL was: {}", taskId, sql, e);
-//        }
-//        return Optional.empty();
     }
 
     public boolean unassignOtherUsersFromTask(Integer taskId, List<Integer> userIds) {
