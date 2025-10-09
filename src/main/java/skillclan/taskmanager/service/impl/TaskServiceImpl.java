@@ -35,12 +35,16 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public Task update(Task task, int id) {
-        boolean isTaskUpdated = taskRepository.update(task, id); //Апдейтимо "звичайні" поля таски в БД
-        // Якщо таску не оновило = її не існує - нічого апдейтити не потрібно =)
-        if (isTaskUpdated){
-            return null;
-        }
         Task partUpdatedTask = taskRepository.findById(id).orElse(null);
+        if (partUpdatedTask == null){
+            return null; // Якщо таску не знайшло = її не існує - нічого апдейтити не потрібно =)
+        }
+        if (partUpdatedTask.getStatus() == task.getStatus() &&
+            partUpdatedTask.getTitle().equals(task.getTitle()) &&
+            partUpdatedTask.getDescription().equals(task.getDescription())
+        ){
+            taskRepository.update(task, id); //Апдейтимо "звичайні" поля таски в БД якщо є зміни
+        }
         Set<Integer> newUsersToAssign = task.getAssignUsers().stream().map(User::getId).collect(Collectors.toSet());
         List<Integer> oldAssignedUsers = partUpdatedTask.getAssignUsers().stream().map(User::getId).toList();
         /* Якщо є newUsersToAssign, які відсутні в oldAssignedUsers (з БД)
