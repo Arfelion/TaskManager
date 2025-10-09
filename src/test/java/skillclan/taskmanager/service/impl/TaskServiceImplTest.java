@@ -6,15 +6,16 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import skillclan.taskmanager.model.Task;
+import skillclan.taskmanager.model.TaskStatus;
 import skillclan.taskmanager.repository.TaskRepository;
 import skillclan.taskmanager.testutils.task.TestTask;
+import skillclan.taskmanager.testutils.user.TestUser;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.*;
 
 
@@ -70,9 +71,17 @@ public class TaskServiceImplTest {
     }
 
     @Test
-    void testUpdateExistingTask(){
+    void testUpdate_onlyUpdate(){
         Task requestTask = TestTask.getTaskWithoutID();
+        requestTask.setAssignUsers(TestUser.getUsersList(1, 10));
 
+        Task taskFromDB = TestTask.getTask();
+        taskFromDB.setAssignUsers(TestUser.getUsersList(1, 10).reversed());
+        taskFromDB.setStatus(TaskStatus.IN_PROGRESS);
+        taskFromDB.setDescription(taskFromDB.getDescription() + "NEW");
+        taskFromDB.setTitle(taskFromDB.getTitle() + "NEW");
+
+        when(taskRepository.findById(ID)).thenReturn(Optional.of(taskFromDB));
         when(taskRepository.update(requestTask, ID)).thenReturn(true);
 
         Task updatedTask = taskService.update(requestTask, ID);
@@ -81,25 +90,66 @@ public class TaskServiceImplTest {
         assertEquals(requestTask.getTitle(), updatedTask.getTitle());
         assertEquals(requestTask.getDescription(), updatedTask.getDescription());
         assertEquals(requestTask.getStatus(), updatedTask.getStatus());
-        verify(taskRepository).update(
-                argThat(task -> {
-                    boolean isTitleCorrect = updatedTask.getTitle().equals(requestTask.getTitle());
-                    boolean isDescriptionCorrect = updatedTask.getDescription().equals(requestTask.getDescription());
-                    boolean isStatusCorrect = updatedTask.getStatus().equals(requestTask.getStatus());
-                    return isTitleCorrect && isDescriptionCorrect && isStatusCorrect;
-                }), eq(ID));
+        verify(taskRepository).findById(ID);
+        verify(taskRepository).update(requestTask, ID);
+        verify(taskRepository, times(0)).assignTaskToUsers(anyInt(), anyList());
+        verify(taskRepository, times(0)).unassignOtherUsersFromTask(anyInt(), anyList());
+    }
+
+    @Test
+    void testUpdate_onlyAssign(){
+        Task requestTask = TestTask.getTaskWithoutID();
+        requestTask.setAssignUsers(TestUser.getUsersList(1, 4));
+
+        Task taskFromDB = TestTask.getTask();
+        taskFromDB.setAssignUsers(TestUser.getUsersList(2, 3));
+
+        when(taskRepository.findById(ID)).thenReturn(Optional.of(taskFromDB));
+        when(taskRepository.assignTaskToUsers(ID, List.of(1,2,3,4))).thenReturn(true);
+
+        Task updatedTask = taskService.update(requestTask, ID);
+
+        assertEquals(ID, updatedTask.getId());
+        verify(taskRepository).findById(ID);
+        verify(taskRepository, times(0)).update(any(Task.class), anyInt());
+        verify(taskRepository).assignTaskToUsers(ID, List.of(1,2,3,4));
+        verify(taskRepository, times(0)).unassignOtherUsersFromTask(anyInt(), anyList());
+    }
+
+    @Test
+    void testUpdate_onlyUnassign(){
+        Task requestTask = TestTask.getTaskWithoutID();
+        requestTask.setAssignUsers(TestUser.getUsersList(2,3));
+
+        Task taskFromDB = TestTask.getTask();
+        taskFromDB.setAssignUsers(TestUser.getUsersList(1, 4));
+
+        when(taskRepository.findById(ID)).thenReturn(Optional.of(taskFromDB));
+        when(taskRepository.unassignOtherUsersFromTask(ID, List.of(2,3))).thenReturn(true);
+
+        Task updatedTask = taskService.update(requestTask, ID);
+
+        assertEquals(ID, updatedTask.getId());
+        verify(taskRepository).findById(ID);
+        verify(taskRepository, times(0)).update(any(Task.class), anyInt());
+        verify(taskRepository, times(0)).assignTaskToUsers(anyInt(), anyList());
+        verify(taskRepository).unassignOtherUsersFromTask(ID, List.of(2,3));
     }
 
     @Test
     void testUpdateNoExistingTask(){
         Task requestTask = TestTask.getTaskWithoutID();
+        requestTask.setAssignUsers(TestUser.getUsersList(1, 5));
 
-        when(taskRepository.update(requestTask, NOT_EXISTING_ID)).thenReturn(false);
+        when(taskRepository.findById(NOT_EXISTING_ID)).thenReturn(Optional.empty());
 
         Task updatedTask = taskService.update(requestTask, NOT_EXISTING_ID);
 
         assertNull(updatedTask);
-        verify(taskRepository).update(requestTask, NOT_EXISTING_ID);
+        verify(taskRepository).findById(NOT_EXISTING_ID);
+        verify(taskRepository, times(0)).update(any(Task.class), anyInt());
+        verify(taskRepository, times(0)).assignTaskToUsers(anyInt(), anyList());
+        verify(taskRepository, times(0)).unassignOtherUsersFromTask(anyInt(), anyList());
     }
 
     @Test

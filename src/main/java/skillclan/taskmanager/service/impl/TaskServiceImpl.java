@@ -35,18 +35,18 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public Task update(Task task, int id) {
-        Task partUpdatedTask = taskRepository.findById(id).orElse(null);
-        if (partUpdatedTask == null){
+        Task taskFromDB = taskRepository.findById(id).orElse(null);
+        if (taskFromDB == null){
             return null; // Якщо таску не знайшло = її не існує - нічого апдейтити не потрібно =)
         }
-        if (partUpdatedTask.getStatus() != task.getStatus() ||
-            !partUpdatedTask.getTitle().equals(task.getTitle()) ||
-            !partUpdatedTask.getDescription().equals(task.getDescription())
+        if (taskFromDB.getStatus() != task.getStatus() ||
+            !taskFromDB.getTitle().equals(task.getTitle()) ||
+            !taskFromDB.getDescription().equals(task.getDescription())
         ){
             taskRepository.update(task, id); //Апдейтимо "звичайні" поля таски в БД якщо є зміни
         }
         Set<Integer> newUsersToAssign = task.getAssignUsers().stream().map(User::getId).collect(Collectors.toSet());
-        List<Integer> oldAssignedUsers = partUpdatedTask.getAssignUsers().stream().map(User::getId).toList();
+        List<Integer> oldAssignedUsers = taskFromDB.getAssignUsers().stream().map(User::getId).toList();
         /* Якщо є newUsersToAssign, які відсутні в oldAssignedUsers (з БД)
            і в результаті їх асайну (affectedRows <= 0) (таких користувачів не існує)
            повертаємо таску, яку ми отримали з БД */
