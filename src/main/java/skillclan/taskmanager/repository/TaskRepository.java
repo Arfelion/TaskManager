@@ -105,27 +105,7 @@ public class TaskRepository {
         return false;
     }
 
-//    public boolean assignTaskToUser(Integer taskId, Integer userId) {
-//        final String sql = """
-//                              INSERT INTO user_tasks (user_id, task_id)
-//                              SELECT :user_id, :task_id
-//                              WHERE NOT EXISTS (
-//                                SELECT 1 FROM user_tasks
-//                                WHERE user_id = :user_id AND task_id = :task_id)
-//                              """;
-//        MapSqlParameterSource params = new MapSqlParameterSource();
-//        params.addValue("user_id", userId);
-//        params.addValue("task_id", taskId);
-//        try {
-//            return jdbcTemplate.update(sql, params) > 0;
-//        } catch (DataAccessException e){
-//            logger.error("Failed to assign taskId={} to userId={}. SQL was: {}", taskId, userId, sql, e);
-//        }
-//        return false;
-//    }
-
-    public boolean assignTaskToUsers(Integer taskId, Integer[] userIds) {
-        final List<Integer> userIdList = Arrays.stream(userIds).toList();
+    public boolean assignTaskToUsers(Integer taskId, List<Integer> userIdList) {
         final String sql = """
             INSERT INTO user_tasks (user_id, task_id)
             SELECT u.id, :task_id
@@ -139,7 +119,7 @@ public class TaskRepository {
         try {
             return jdbcTemplate.update(sql, insertParams) > 0;
         } catch (DataAccessException e){
-            logger.error("Failed to assign taskId={} to userIds={}. SQL was: {}", taskId, userIds, sql, e);
+            logger.error("Failed to assign taskId={} to userIds={}. SQL was: {}", taskId, userIdList, sql, e);
         }
         return false;
 //        final String sql = """
@@ -161,18 +141,18 @@ public class TaskRepository {
 //        return Optional.empty();
     }
 
-    public boolean unassignTaskFromUser(Integer taskId, Integer userId) {
+    public boolean unassignOtherUsersFromTask(Integer taskId, List<Integer> userIds) {
         final String sql = """
                               DELETE FROM user_tasks
-                              WHERE user_id = :user_id AND task_id = :task_id
+                              WHERE task_id = :task_id AND user_id NOT IN (:user_id)
                               """;
         MapSqlParameterSource params = new MapSqlParameterSource();
-        params.addValue("user_id", userId);
+        params.addValue("user_id", userIds);
         params.addValue("task_id", taskId);
         try {
             return jdbcTemplate.update(sql, params) > 0;
         } catch (DataAccessException e){
-            logger.error("Failed to unassign taskId={} from userId={}. SQL was: {}", taskId, userId, sql, e);
+            logger.error("Failed to unassign taskId={} from userId={}. SQL was: {}", taskId, userIds, sql, e);
         }
         return false;
     }

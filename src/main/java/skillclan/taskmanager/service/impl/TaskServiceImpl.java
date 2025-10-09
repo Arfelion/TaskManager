@@ -2,11 +2,12 @@ package skillclan.taskmanager.service.impl;
 
 import org.springframework.stereotype.Service;
 import skillclan.taskmanager.model.Task;
+import skillclan.taskmanager.model.User;
 import skillclan.taskmanager.repository.TaskRepository;
 import skillclan.taskmanager.service.TaskService;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class TaskServiceImpl implements TaskService {
@@ -34,9 +35,27 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public Task update(Task task, int id) {
-        boolean updated = taskRepository.update(task, id);
+        boolean isTaskUpdated = taskRepository.update(task, id); //Апдейтимо "звичайні" поля таски в БД
+        // Якщо таску не оновило = її не існує - нічого апдейтити не потрібно =)
+        if (isTaskUpdated){
+            return null;
+        }
+        Task partUpdatedTask = taskRepository.findById(id).orElse(null);
+        Set<Integer> newUsersToAssign = task.getAssignUsers().stream().map(User::getId).collect(Collectors.toSet());
+        List<Integer> oldAssignedUsers = partUpdatedTask.getAssignUsers().stream().map(User::getId).toList();
+        /* Якщо є newUsersToAssign, які відсутні в oldAssignedUsers (з БД)
+           і в результаті їх асайну (affectedRows <= 0) (таких користувачів не існує)
+           повертаємо таску, яку ми отримали з БД */
+        if (!oldAssignedUsers.containsAll(newUsersToAssign) && !taskRepository.assignTaskToUsers(id, new ArrayList<>(newUsersToAssign))){
+            return partUpdatedTask;
+        }
+        boolean isUnassign = true;
+        if (!newUsersToAssign.containsAll(oldAssignedUsers)) {
+            isUnassign = taskRepository.unassignOtherUsersFromTask(id, new ArrayList<>(newUsersToAssign));
+        }
+        //В залежності вір реалізації і того що ми хочемо віддати тут можуть бути різні варіанти
         task.setId(id);
-        return updated ? task : null;
+        return  task;
     }
 
     @Override
@@ -45,7 +64,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     public Task assignTaskToUsers(int taskId, int[] userIds) {
-        Integer[] integerUserIds = Arrays.stream(userIds).boxed().toArray(Integer[]::new);
+        List<Integer> integerUserIds = Arrays.stream(userIds).boxed().collect(Collectors.toList());
         return taskRepository.assignTaskToUsers(taskId, integerUserIds) // тут проблема. Якщо юзери вже назначені на таски раніше то поверне null - потрібно обговорити
                 ? taskRepository.findById(taskId).orElse(null)
                 : null;
