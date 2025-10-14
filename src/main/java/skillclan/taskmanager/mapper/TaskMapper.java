@@ -3,14 +3,15 @@ package skillclan.taskmanager.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.NullValueCheckStrategy;
-import skillclan.taskmanager.dto.UserDto;
-import skillclan.taskmanager.model.User;
+import skillclan.taskmanager.dto.TaskDto;
+import skillclan.taskmanager.model.Task;
 
 @Mapper(componentModel = "spring", nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
-public interface UserMapper {
+public interface TaskMapper {
 
-    UserDto userToUserDto(User user);
+    TaskDto taskToTaskDto(Task task);
 
     @Mapping(target = "id", ignore = true)
-    User userDtoToUser(UserDto userDto);
+    Task taskDtoToTask(TaskDto taskDto);
+
 }

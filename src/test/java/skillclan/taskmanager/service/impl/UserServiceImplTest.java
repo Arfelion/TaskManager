@@ -1,135 +1,123 @@
 package skillclan.taskmanager.service.impl;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import skillclan.taskmanager.dto.UserDto;
-import skillclan.taskmanager.mapper.UserMapper;
 import skillclan.taskmanager.model.User;
+import skillclan.taskmanager.repository.UserRepository;
+import skillclan.taskmanager.testutils.user.TestUser;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 
 @ExtendWith(MockitoExtension.class)
 public class UserServiceImplTest {
 
     @Mock
-
+    private UserRepository userRepository;
     @InjectMocks
-    private final UserServiceImpl userService = new UserServiceImpl();
-
-    private List<User> USERS;
-    private User user1;
-    private User user2;
-
-    @BeforeEach
-    void setUp() {
-        USERS = null;
-
-        userService.resetUsers(); //Костиль-метод очистки ХешМапи та скидання ІдГенератора
-
-        user1 = new User();
-        user1.setId(1);
-        user1.setEmail("test1@test.com");
-        user1.setName("TestUserName1");
-        user1.setPhoneNumber("380120000001");
-
-        user2 = new User();
-        user2.setId(2);
-        user2.setEmail("test2@test.com");
-        user2.setName("TestUserName2");
-        user2.setPhoneNumber("380120000002");
-    }
+    private UserServiceImpl userService;
+    private static final Integer ID = 10;
+    private static final Integer NOT_EXISTING_ID = Integer.MAX_VALUE;
 
     @Test
     void testCreateUser() {
-        User createdUser = userService.create(user1);
-        assertTrue(createdUser.getId() > 0);
-        assertEquals("test1@test.com", createdUser.getEmail());
-        assertEquals("TestUserName1", createdUser.getName());
-        assertEquals("380120000001", createdUser.getPhoneNumber());
+        User requestUser = TestUser.getUserWithoutID();
+        User createdUser = TestUser.getUser();
+
+        when(userRepository.create(requestUser)).thenReturn(Optional.of(createdUser));
+
+        assertEquals(userService.create(requestUser), createdUser);
+        verify(userRepository).create(requestUser);
     }
 
     @Test
     void testReadAllUsers(){
-        userService.create(user1); //no Create
-        userService.create(user2); //no Create
-        USERS = userService.readAll();
-        assertNotNull(USERS);
-        assertEquals(2, USERS.size());
+        List<User> users = new ArrayList<>();
+        users.add(TestUser.getUser());
+
+        when(userRepository.findAll()).thenReturn(users);
+
+        assertIterableEquals(users, userService.readAll());
+        verify(userRepository).findAll();
     }
 
     @Test
     void testReadExistingUser() {
-        User createdUser = userService.create(user1); //no Create
-        User foundUser = userService.read(createdUser.getId());
+        when(userRepository.findById(ID)).thenReturn(Optional.of(TestUser.getUserWithoutID()));
+
+        User foundUser = userService.read(ID);
+
         assertNotNull(foundUser);
-        assertEquals(foundUser, createdUser);
-        assertEquals("test1@test.com",createdUser.getEmail());
-        assertEquals("TestUserName1",createdUser.getName());
-        assertEquals("380120000001",createdUser.getPhoneNumber());
+        assertEquals(foundUser, TestUser.getUserWithoutID());
+        verify(userRepository).findById(ID);
     }
 
     @Test
     void testReadNotExistingUser() {
-        User foundUser = userService.read(Integer.MAX_VALUE);
-        assertNull(foundUser);
+        when(userRepository.findById(NOT_EXISTING_ID)).thenReturn(Optional.empty());
+
+        assertNull(userService.read(NOT_EXISTING_ID));
+        verify(userRepository).findById(NOT_EXISTING_ID);
     }
 
     @Test
     void testUpdateExistingUser() {
-        User createdUser = userService.create(user1); //no Create
-        int createdUserId = createdUser.getId();
-        boolean results = userService.update(user2, createdUserId);
-        User updatedUser = userService.read(createdUserId); //no Read
-        assertTrue(results);
-        assertEquals("test2@test.com", updatedUser.getEmail());
-        assertEquals("TestUserName2", updatedUser.getName());
-        assertEquals("380120000002", updatedUser.getPhoneNumber());
+        User requestUser = TestUser.getUserWithoutID();
+
+        when(userRepository.update(requestUser, ID)).thenReturn(true);
+
+        User updatedUser = userService.update(requestUser, ID);
+
+        assertEquals(10, updatedUser.getId());
+        assertEquals("TestUserName", updatedUser.getName());
+        assertEquals("test@test.test", updatedUser.getEmail());
+        assertEquals("380991234567", updatedUser.getPhoneNumber());
+        verify(userRepository).update(
+                argThat(user -> {
+                    boolean isNameCorrect = updatedUser.getName().equals(requestUser.getName());
+                    boolean isEmailCorrect = updatedUser.getEmail().equals(requestUser.getEmail());
+                    boolean isPhoneNumberCorrect = updatedUser.getPhoneNumber().equals(requestUser.getPhoneNumber());
+                    return isNameCorrect && isEmailCorrect && isPhoneNumberCorrect;
+                }), eq(ID));
     }
+
 
     @Test
     void testUpdateNotExistingUser() {
-        boolean results = userService.update(user1, userService.readAll().size() + 99);
-        assertFalse(results);
-        assertNull(userService.read(userService.readAll().size() + 99)); //no Read
+        User user = TestUser.getUserWithoutID();
+
+        when(userRepository.update(user, NOT_EXISTING_ID)).thenReturn(false);
+
+        User results = userService.update(user, NOT_EXISTING_ID);
+
+        assertNull(results);
+        verify(userRepository).update(user, NOT_EXISTING_ID);
     }
 
     @Test
     void testDeleteExistingUser(){
-        User createdUser1 = userService.create(user1); //no Create
-        User createdUser2 = userService.create(user2); //no Create
-        int createdUserId1 = createdUser1.getId();
-        int createdUserId2 = createdUser2.getId();
-        int usersCountBeforeDelete = userService.readAll().size(); //no Read
-        boolean result = userService.delete(createdUserId1);
-        int usersCountAfterDelete = userService.readAll().size(); //no Read
+        when(userRepository.delete(ID)).thenReturn(true);
+
+        boolean result = userService.delete(ID);
+
         assertTrue(result);
-        assertEquals(usersCountBeforeDelete - 1, usersCountAfterDelete);
-        assertEquals(createdUser2, userService.read(createdUserId2)); //no Read
-        assertNull(userService.read(createdUserId1)); //no Read
-        assertNotNull(userService.read(createdUserId2)); //no Read
     }
 
     @Test
     void testDeleteNotExistingUser(){
-        User createdUser1 = userService.create(user1); //no Create
-        User createdUser2 = userService.create(user2); //no Create
-        int createdUserId1 = createdUser1.getId();
-        int createdUserId2 = createdUser2.getId();
-        int usersCountBeforeDelete = userService.readAll().size();  //no Read
-        boolean result = userService.delete(userService.readAll().size() + 99);  //no Read
-        int usersCountAfterDelete = userService.readAll().size();  //no Read
+        when(userRepository.delete(NOT_EXISTING_ID)).thenReturn(false);
+
+        boolean result = userService.delete(NOT_EXISTING_ID);
+
         assertFalse(result);
-        assertEquals(usersCountBeforeDelete, usersCountAfterDelete);
-        assertEquals(createdUser1, userService.read(createdUserId1));  //no Read
-        assertEquals(createdUser2, userService.read(createdUserId2));  //no Read
     }
 }

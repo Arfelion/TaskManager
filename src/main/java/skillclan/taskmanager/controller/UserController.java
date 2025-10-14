@@ -1,6 +1,5 @@
 package skillclan.taskmanager.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,57 +12,52 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/api/v1/users")
 public class UserController {
 
     private final UserService userService;
+    private final UserMapper userMapper;
 
-    @Autowired
-    UserMapper userMapper;
-
-    @Autowired
-    public UserController(UserService userService){
+    public UserController(UserService userService, UserMapper userMapper){
         this.userService = userService;
+        this.userMapper = userMapper;
     }
 
-    @PostMapping("/users")
-    public UserDto createUser(@RequestBody UserDto userDto){
-        User user = userMapper.userDtoToUser(userDto);
-        return userMapper.userToUserDto(userService.create(user));
+    @PostMapping
+    public ResponseEntity<UserDto> createUser(@RequestBody UserDto userDto){
+        final User user = userMapper.userDtoToUser(userDto);
+        final User createdUser = userService.create(user);
+        return new ResponseEntity<>(userMapper.userToUserDto(createdUser), HttpStatus.CREATED);
     }
 
-    @GetMapping("/users")
+    @GetMapping
     public ResponseEntity<List<UserDto>> getAllUsers(){
         final List<User> users = userService.readAll();
-        return (users != null && !users.isEmpty())
-                ? new ResponseEntity<>(users.stream()
-                .map(user -> userMapper.userToUserDto(user))
-                .collect(Collectors.toList()), HttpStatus.OK)
-                : new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(users.stream()
+                .map(userMapper::userToUserDto)
+                .collect(Collectors.toList()), HttpStatus.OK);
     }
 
-    @GetMapping("/users/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<UserDto> getUserById(@PathVariable (name = "id") int id){
         final User user = userService.read(id);
-        return (user != null)
-            ? new ResponseEntity<>(userMapper.userToUserDto(user), HttpStatus.OK)
-            : new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        return (user == null) //Next time, this will be replaced with error handling
+            ? new ResponseEntity<>(HttpStatus.NOT_FOUND)
+            : new ResponseEntity<>(userMapper.userToUserDto(user), HttpStatus.OK);
     }
 
-    @PutMapping("/users/{id}")
-    public ResponseEntity<?> updateUserById(@PathVariable (name = "id") int id, @RequestBody UserDto userDto){
-        User user = userMapper.userDtoToUser(userDto);
-        final boolean updated = userService.update(user, id);
-        return updated
-                ? new ResponseEntity<>(HttpStatus.OK)
-                : new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
+    @PutMapping("/{id}")
+    public ResponseEntity<UserDto> updateUserById(@RequestBody UserDto userDto, @PathVariable (name = "id") int id){
+        final User user = userMapper.userDtoToUser(userDto);
+        final User updatedUser = userService.update(user, id);
+        return (updatedUser == null) //Next time, this will be replaced with error handling
+                ? new ResponseEntity<>(HttpStatus.NOT_FOUND)
+                : new ResponseEntity<>(userMapper.userToUserDto(updatedUser), HttpStatus.OK);
     }
 
-    @DeleteMapping("/users/{id}")
-    public ResponseEntity<?> deleteUserById(@PathVariable (name = "id") int id){
-        final boolean deleted = userService.delete(id);
-        return  deleted
-                ? new ResponseEntity<>(HttpStatus.OK)
-                : new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUserById(@PathVariable (name = "id") int id){
+        userService.delete(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
