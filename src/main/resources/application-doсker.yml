@@ -1,0 +1,16 @@
+server:
+  port: 8080
+spring:
+  datasource:
+    url: jdbc:postgresql://db:5432/${DB_NAME}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 10
+      schema: taskmanager
+    driver-class-name: org.postgresql.Driver
+  cache:
+    type: redis
+    redis:
+      host: cache
+      port: 6379
