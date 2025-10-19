@@ -92,8 +92,8 @@ public class TaskServiceImplTest {
         assertEquals(requestTask.getStatus(), updatedTask.getStatus());
         verify(taskRepository).findById(ID);
         verify(taskRepository).update(requestTask, ID);
-        verify(taskRepository, times(0)).assignTaskToUsers(anyInt(), anyList());
-        verify(taskRepository, times(0)).unassignOtherUsersFromTask(anyInt(), anyList());
+        verify(taskRepository, never()).assignTaskToUsers(anyInt(), anyList());
+        verify(taskRepository, never()).keepOnlyTaskAssignees(anyInt(), anyList());
     }
 
     @Test
@@ -111,9 +111,9 @@ public class TaskServiceImplTest {
 
         assertEquals(ID, updatedTask.getId());
         verify(taskRepository).findById(ID);
-        verify(taskRepository, times(0)).update(any(Task.class), anyInt());
+        verify(taskRepository, never()).update(any(Task.class), anyInt());
         verify(taskRepository).assignTaskToUsers(ID, List.of(1,2,3,4));
-        verify(taskRepository, times(0)).unassignOtherUsersFromTask(anyInt(), anyList());
+        verify(taskRepository, never()).keepOnlyTaskAssignees(anyInt(), anyList());
     }
 
     @Test
@@ -125,15 +125,15 @@ public class TaskServiceImplTest {
         taskFromDB.setAssignUsers(TestUser.getUsersList(1, 4));
 
         when(taskRepository.findById(ID)).thenReturn(Optional.of(taskFromDB));
-        when(taskRepository.unassignOtherUsersFromTask(ID, List.of(2,3))).thenReturn(true);
+        when(taskRepository.keepOnlyTaskAssignees(ID, List.of(2,3))).thenReturn(true);
 
         Task updatedTask = taskService.update(requestTask, ID);
 
         assertEquals(ID, updatedTask.getId());
         verify(taskRepository).findById(ID);
-        verify(taskRepository, times(0)).update(any(Task.class), anyInt());
-        verify(taskRepository, times(0)).assignTaskToUsers(anyInt(), anyList());
-        verify(taskRepository).unassignOtherUsersFromTask(ID, List.of(2,3));
+        verify(taskRepository, never()).update(any(Task.class), anyInt());
+        verify(taskRepository, never()).assignTaskToUsers(anyInt(), anyList());
+        verify(taskRepository).keepOnlyTaskAssignees(ID, List.of(2,3));
     }
 
     @Test
@@ -149,7 +149,7 @@ public class TaskServiceImplTest {
         verify(taskRepository).findById(NOT_EXISTING_ID);
         verify(taskRepository, times(0)).update(any(Task.class), anyInt());
         verify(taskRepository, times(0)).assignTaskToUsers(anyInt(), anyList());
-        verify(taskRepository, times(0)).unassignOtherUsersFromTask(anyInt(), anyList());
+        verify(taskRepository, times(0)).keepOnlyTaskAssignees(anyInt(), anyList());
     }
 
     @Test
