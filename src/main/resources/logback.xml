@@ -8,9 +8,9 @@
     </appender>
 
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>logs/app.log</file> <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+        <file>logs/TaskManager.log</file> <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
         <fileNamePattern>logs/app.%d{yyyy-MM-dd}.%i.log.zip</fileNamePattern>
-        <maxHistory>30</maxHistory>
+        <maxHistory>365</maxHistory>
         <TimeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
             <maxFileSize>10MB</maxFileSize>
         </TimeBasedFileNamingAndTriggeringPolicy>

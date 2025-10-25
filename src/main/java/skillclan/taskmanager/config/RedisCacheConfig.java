@@ -13,8 +13,8 @@ public class RedisCacheConfig {
     @Bean
     public RedisCacheConfiguration cacheConfiguration() {
         return RedisCacheConfiguration.defaultCacheConfig()
-                .entryTtl(Duration.ofHours(24)) //Set TTL 24h
-                .disableCachingNullValues() // Disable cache null-values
-                .serializeValuesWith(SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer())); // Setup JSON-serialization
+                .entryTtl(Duration.ofHours(24))
+                .disableCachingNullValues()
+                .serializeValuesWith(SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()));
     }
 }
