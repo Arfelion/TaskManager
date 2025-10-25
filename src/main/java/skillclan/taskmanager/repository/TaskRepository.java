@@ -124,7 +124,7 @@ public class TaskRepository {
         return false;
     }
 
-    public boolean unassignOtherUsersFromTask(Integer taskId, List<Integer> userIds) {
+    public boolean keepOnlyTaskAssignees(Integer taskId, List<Integer> userIds) {
         final String sql = """
                               DELETE FROM user_tasks
                               WHERE task_id = :task_id AND user_id NOT IN (:user_id)

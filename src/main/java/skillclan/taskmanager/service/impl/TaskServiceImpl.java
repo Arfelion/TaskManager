@@ -37,28 +37,22 @@ public class TaskServiceImpl implements TaskService {
     public Task update(Task task, int id) {
         Task taskFromDB = taskRepository.findById(id).orElse(null);
         if (taskFromDB == null){
-            return null; // Якщо таску не знайшло = її не існує - нічого апдейтити не потрібно =)
+            return null;
         }
         if (taskFromDB.getStatus() != task.getStatus() ||
             !taskFromDB.getTitle().equals(task.getTitle()) ||
             !taskFromDB.getDescription().equals(task.getDescription())
         ){
-            taskRepository.update(task, id); //Апдейтимо "звичайні" поля таски в БД якщо є зміни
+            taskRepository.update(task, id);
         }
         Set<Integer> newUsersToAssign = task.getAssignUsers().stream().map(User::getId).collect(Collectors.toSet());
         List<Integer> oldAssignedUsers = taskFromDB.getAssignUsers().stream().map(User::getId).toList();
-        /* Якщо є newUsersToAssign, які відсутні в oldAssignedUsers (з БД)
-           і в результаті їх асайну (affectedRows <= 0) (таких користувачів не існує)
-           повертаємо таску, яку ми отримали з БД */
-        boolean isAssignedNewUsers;
         if (!oldAssignedUsers.containsAll(newUsersToAssign)){
-            isAssignedNewUsers = taskRepository.assignTaskToUsers(id, new ArrayList<>(newUsersToAssign));
+            taskRepository.assignTaskToUsers(id, new ArrayList<>(newUsersToAssign));
         }
-        boolean isUnassignOldUsers = true;
         if (!newUsersToAssign.containsAll(oldAssignedUsers)) {
-            isUnassignOldUsers = taskRepository.unassignOtherUsersFromTask(id, new ArrayList<>(newUsersToAssign));
+            taskRepository.keepOnlyTaskAssignees(id, new ArrayList<>(newUsersToAssign));
         }
-        //В залежності вір реалізації і того що ми хочемо віддати тут можуть бути різні варіанти (isAssignedNewUsers та isUnassignOldUsers - чи додали/видалили користувачів)
         task.setId(id);
         return  task;
     }

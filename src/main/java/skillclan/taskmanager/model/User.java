@@ -1,9 +1,10 @@
 package skillclan.taskmanager.model;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 
-public class User {
+public class User implements Serializable {
     private Integer id;
     private String name;
     private String email;
