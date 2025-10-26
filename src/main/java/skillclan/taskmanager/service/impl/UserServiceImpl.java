@@ -44,7 +44,7 @@ public class UserServiceImpl implements UserService {
     public User update(User user, int id) {
         boolean updated = userRepository.update(user, id);
         if (!updated){
-            throw new UserNotFoundException("User with id=" + id + " was not found");
+            return null;
         }
         user.setId(id);
         return user;

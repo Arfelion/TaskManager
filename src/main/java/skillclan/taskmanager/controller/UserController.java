@@ -53,6 +53,9 @@ public class UserController {
     public ResponseEntity<UserDto> updateUserById(@RequestBody @Valid UserDto userDto, @PathVariable (name = "id") int id){
         final User user = userMapper.userDtoToUser(userDto);
         final User updatedUser = userService.update(user, id);
+        if (updatedUser == null){
+            throw new UserNotFoundException("User with id=" + id + " was not found");
+        }
         return new ResponseEntity<>(userMapper.userToUserDto(updatedUser), HttpStatus.OK);
     }
 

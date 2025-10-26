@@ -54,6 +54,9 @@ public class TaskController {
     public ResponseEntity<TaskDto> updateTaskById(@RequestBody @Valid TaskDto taskDto, @PathVariable (name = "id") int id){
         final Task task = taskMapper.taskDtoToTask(taskDto);
         final Task updatedTask = taskService.update(task, id);
+        if (updatedTask == null){
+            throw new TaskNotFoundException("Task with id=" + id + " was not found");
+        }
         return new ResponseEntity<>(taskMapper.taskToTaskDto(updatedTask), HttpStatus.OK);
     }
 
