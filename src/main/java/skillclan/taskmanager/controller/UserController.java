@@ -1,9 +1,11 @@
 package skillclan.taskmanager.controller;
 
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import skillclan.taskmanager.dto.UserDto;
+import skillclan.taskmanager.exception.UserNotFoundException;
 import skillclan.taskmanager.mapper.UserMapper;
 import skillclan.taskmanager.model.User;
 import skillclan.taskmanager.service.UserService;
@@ -24,7 +26,7 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<UserDto> createUser(@RequestBody UserDto userDto){
+    public ResponseEntity<UserDto> createUser(@RequestBody @Valid UserDto userDto){
         final User user = userMapper.userDtoToUser(userDto);
         final User createdUser = userService.create(user);
         return new ResponseEntity<>(userMapper.userToUserDto(createdUser), HttpStatus.CREATED);
@@ -41,18 +43,17 @@ public class UserController {
     @GetMapping("/{id}")
     public ResponseEntity<UserDto> getUserById(@PathVariable (name = "id") int id){
         final User user = userService.read(id);
-        return (user == null) //Next time, this will be replaced with error handling
-            ? new ResponseEntity<>(HttpStatus.NOT_FOUND)
-            : new ResponseEntity<>(userMapper.userToUserDto(user), HttpStatus.OK);
+        if (user == null){
+            throw new UserNotFoundException("User with id=" + id + " was not found");
+        }
+        return new ResponseEntity<>(userMapper.userToUserDto(user), HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserDto> updateUserById(@RequestBody UserDto userDto, @PathVariable (name = "id") int id){
+    public ResponseEntity<UserDto> updateUserById(@RequestBody @Valid UserDto userDto, @PathVariable (name = "id") int id){
         final User user = userMapper.userDtoToUser(userDto);
         final User updatedUser = userService.update(user, id);
-        return (updatedUser == null) //Next time, this will be replaced with error handling
-                ? new ResponseEntity<>(HttpStatus.NOT_FOUND)
-                : new ResponseEntity<>(userMapper.userToUserDto(updatedUser), HttpStatus.OK);
+        return new ResponseEntity<>(userMapper.userToUserDto(updatedUser), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")

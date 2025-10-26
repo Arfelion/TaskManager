@@ -1,13 +1,21 @@
 package skillclan.taskmanager.dto;
 
+import jakarta.validation.constraints.*;
 import skillclan.taskmanager.model.TaskStatus;
 
 import java.util.List;
 
 public class TaskDto {
+    @Null(message = "Id must be null")
     private Integer id;
+
+    @NotBlank(message = "Tittle cannot be empty")
     private String title;
+
+    @Size(max = 500, message = "Description cannot be more than 500 symbols")
     private String description;
+
+    @NotNull(message = "Status cannot be null")
     private TaskStatus status;
     private List<UserDto> assignUsers;
 

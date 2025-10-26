@@ -1,10 +1,12 @@
 package skillclan.taskmanager.controller;
 
 
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import skillclan.taskmanager.dto.TaskDto;
+import skillclan.taskmanager.exception.TaskNotFoundException;
 import skillclan.taskmanager.mapper.TaskMapper;
 import skillclan.taskmanager.model.Task;
 import skillclan.taskmanager.service.TaskService;
@@ -25,7 +27,7 @@ public class TaskController {
     }
 
     @PostMapping
-    public ResponseEntity<TaskDto> createTask(@RequestBody TaskDto taskDto){
+    public ResponseEntity<TaskDto> createTask(@RequestBody @Valid TaskDto taskDto){
         final Task task = taskMapper.taskDtoToTask(taskDto);
         final Task createdTask = taskService.create(task);
         return new ResponseEntity<>(taskMapper.taskToTaskDto(createdTask), HttpStatus.CREATED);
@@ -42,18 +44,17 @@ public class TaskController {
     @GetMapping("/{id}")
     public ResponseEntity<TaskDto> getTaskById(@PathVariable (name = "id") int id){
         final Task task = taskService.read(id);
-        return (task == null) //Next time, this will be replaced with error handling
-                ? new ResponseEntity<>(HttpStatus.NOT_FOUND)
-                : new ResponseEntity<>(taskMapper.taskToTaskDto(task), HttpStatus.OK);
+        if (task == null){
+            throw new TaskNotFoundException("Task with id=" + id + " was not found");
+        }
+        return new ResponseEntity<>(taskMapper.taskToTaskDto(task), HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<TaskDto> updateTaskById(@RequestBody TaskDto taskDto, @PathVariable (name = "id") int id){
+    public ResponseEntity<TaskDto> updateTaskById(@RequestBody @Valid TaskDto taskDto, @PathVariable (name = "id") int id){
         final Task task = taskMapper.taskDtoToTask(taskDto);
         final Task updatedTask = taskService.update(task, id);
-        return (updatedTask == null) //Next time, this will be replaced with error handling
-                ? new ResponseEntity<>(null, HttpStatus.NOT_FOUND)
-                : new ResponseEntity<>(taskMapper.taskToTaskDto(updatedTask), HttpStatus.OK);
+        return new ResponseEntity<>(taskMapper.taskToTaskDto(updatedTask), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")

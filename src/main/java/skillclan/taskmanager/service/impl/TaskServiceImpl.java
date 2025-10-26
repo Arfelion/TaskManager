@@ -1,6 +1,7 @@
 package skillclan.taskmanager.service.impl;
 
 import org.springframework.stereotype.Service;
+import skillclan.taskmanager.exception.TaskNotFoundException;
 import skillclan.taskmanager.model.Task;
 import skillclan.taskmanager.model.User;
 import skillclan.taskmanager.repository.TaskRepository;
@@ -37,7 +38,7 @@ public class TaskServiceImpl implements TaskService {
     public Task update(Task task, int id) {
         Task taskFromDB = taskRepository.findById(id).orElse(null);
         if (taskFromDB == null){
-            return null;
+            throw new TaskNotFoundException("Task with id=" + id + " was not found");
         }
         if (taskFromDB.getStatus() != task.getStatus() ||
             !taskFromDB.getTitle().equals(task.getTitle()) ||
