@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import skillclan.taskmanager.dto.TaskDto;
-import skillclan.taskmanager.exception.TaskNotFoundException;
+import skillclan.taskmanager.exception.EntityNotFoundException;
 import skillclan.taskmanager.mapper.TaskMapper;
 import skillclan.taskmanager.model.Task;
 import skillclan.taskmanager.service.TaskService;
@@ -45,7 +45,7 @@ public class TaskController {
     public ResponseEntity<TaskDto> getTaskById(@PathVariable (name = "id") int id){
         final Task task = taskService.read(id);
         if (task == null){
-            throw new TaskNotFoundException("Task with id=" + id + " was not found");
+            throw new EntityNotFoundException("Task with id=" + id + " was not found");
         }
         return new ResponseEntity<>(taskMapper.taskToTaskDto(task), HttpStatus.OK);
     }
@@ -54,9 +54,6 @@ public class TaskController {
     public ResponseEntity<TaskDto> updateTaskById(@RequestBody @Valid TaskDto taskDto, @PathVariable (name = "id") int id){
         final Task task = taskMapper.taskDtoToTask(taskDto);
         final Task updatedTask = taskService.update(task, id);
-        if (updatedTask == null){
-            throw new TaskNotFoundException("Task with id=" + id + " was not found");
-        }
         return new ResponseEntity<>(taskMapper.taskToTaskDto(updatedTask), HttpStatus.OK);
     }
 

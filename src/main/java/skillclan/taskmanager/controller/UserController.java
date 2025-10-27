@@ -5,7 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import skillclan.taskmanager.dto.UserDto;
-import skillclan.taskmanager.exception.UserNotFoundException;
+import skillclan.taskmanager.exception.EntityNotFoundException;
 import skillclan.taskmanager.mapper.UserMapper;
 import skillclan.taskmanager.model.User;
 import skillclan.taskmanager.service.UserService;
@@ -44,7 +44,7 @@ public class UserController {
     public ResponseEntity<UserDto> getUserById(@PathVariable (name = "id") int id){
         final User user = userService.read(id);
         if (user == null){
-            throw new UserNotFoundException("User with id=" + id + " was not found");
+            throw new EntityNotFoundException("User with id=" + id + " was not found");
         }
         return new ResponseEntity<>(userMapper.userToUserDto(user), HttpStatus.OK);
     }
@@ -53,9 +53,6 @@ public class UserController {
     public ResponseEntity<UserDto> updateUserById(@RequestBody @Valid UserDto userDto, @PathVariable (name = "id") int id){
         final User user = userMapper.userDtoToUser(userDto);
         final User updatedUser = userService.update(user, id);
-        if (updatedUser == null){
-            throw new UserNotFoundException("User with id=" + id + " was not found");
-        }
         return new ResponseEntity<>(userMapper.userToUserDto(updatedUser), HttpStatus.OK);
     }
 

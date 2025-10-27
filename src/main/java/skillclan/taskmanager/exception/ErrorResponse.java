@@ -4,12 +4,12 @@ import java.time.LocalDateTime;
 
 public class ErrorResponse {
     private final String errorName;
-    private final String DetailedErrorMessage;
+    private final String detailedErrorMessage;
     private final LocalDateTime timestamp;
 
     public ErrorResponse(String errorName, String DetailedErrorMessage) {
         this.errorName = errorName;
-        this.DetailedErrorMessage = DetailedErrorMessage;
+        this.detailedErrorMessage = DetailedErrorMessage;
         this.timestamp = LocalDateTime.now();
     }
 
@@ -18,7 +18,7 @@ public class ErrorResponse {
     }
 
     public String getDetailedErrorMessage() {
-        return DetailedErrorMessage;
+        return detailedErrorMessage;
     }
 
     public LocalDateTime getTimestamp() {

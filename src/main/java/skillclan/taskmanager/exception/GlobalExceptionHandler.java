@@ -20,8 +20,7 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(er, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @ExceptionHandler(exception = { TaskNotFoundException.class,
-                                    UserNotFoundException.class})
+    @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleEntityNotFoundException(Exception ex) {
         logger.error("An EntityNotFoundException occurred: {}", ex.getMessage());
         ErrorResponse er = new ErrorResponse("Entity not found exception", ex.getMessage());
