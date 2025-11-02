@@ -34,13 +34,8 @@ public class UserRepository {
         params.addValue("name", user.getName());
         params.addValue("email", user.getEmail());
         params.addValue("phone_number", user.getPhoneNumber());
-        try {
-            user.setId(jdbcTemplate.queryForObject(sql, params, Integer.class));
-            return Optional.of(user);
-        } catch (DataAccessException e){
-            logger.error("Failed to create user. SQL was: {}", sql, e);
-        }
-        return Optional.empty();
+        user.setId(jdbcTemplate.queryForObject(sql, params, Integer.class));
+        return Optional.of(user);
     }
 
     public Optional<User> findById(int id){

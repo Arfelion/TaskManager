@@ -3,7 +3,7 @@ package skillclan.taskmanager.dto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Null;
-import jakarta.validation.constraints.Pattern;
+import skillclan.taskmanager.validation.UkraineMSISDN;
 
 public class UserDto {
     @Null(message = "Id must be null")
@@ -16,8 +16,7 @@ public class UserDto {
     @NotBlank(message = "Email cannot be empty")
     private String email;
 
-    @Pattern(regexp = "^380(\\d){9}$",
-             message = "Mobile number must contain 380 and 9 digits")
+    @UkraineMSISDN
     private String phoneNumber;
 
     public Integer getId() {

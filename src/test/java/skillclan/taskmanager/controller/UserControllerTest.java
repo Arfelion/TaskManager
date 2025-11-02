@@ -6,6 +6,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import skillclan.taskmanager.exception.EntityNotFoundException;
 import skillclan.taskmanager.mapper.UserMapperImpl;
 import skillclan.taskmanager.model.User;
 import skillclan.taskmanager.service.UserService;
@@ -87,7 +88,7 @@ public class UserControllerTest {
 
     @Test
     void testGetUserById_UnSuccess() throws Exception {
-        when(userService.read(NOT_EXISTING_ID)).thenReturn(null);
+        when(userService.read(NOT_EXISTING_ID)).thenThrow(EntityNotFoundException.class);
 
         mockMvc.perform(get("/api/v1/users/{NOT_EXISTING_ID}", NOT_EXISTING_ID)
                 .header("Content-Type", "application/json"))
@@ -165,7 +166,7 @@ public class UserControllerTest {
     void testUpdateUserById_UnSuccess() throws Exception {
         User user = TestUser.getUserWithoutID();
 
-        when(userService.update(user, NOT_EXISTING_ID)).thenReturn(null);
+        when(userService.update(user, NOT_EXISTING_ID)).thenThrow(EntityNotFoundException.class);
 
         mockMvc.perform(put("/api/v1/users/{NOT_EXISTING_ID}", NOT_EXISTING_ID)
                 .content("""                      

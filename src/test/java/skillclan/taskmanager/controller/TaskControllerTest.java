@@ -6,6 +6,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import skillclan.taskmanager.exception.EntityNotFoundException;
 import skillclan.taskmanager.mapper.TaskMapperImpl;
 import skillclan.taskmanager.model.Task;
 import skillclan.taskmanager.service.TaskService;
@@ -126,7 +127,7 @@ public class TaskControllerTest {
 
     @Test
     void testGetTaskById_UnSuccess() throws Exception {
-        when(taskService.read(NOT_EXISTING_ID)).thenReturn(null);
+        when(taskService.read(NOT_EXISTING_ID)).thenThrow(EntityNotFoundException.class);
 
         mockMvc.perform(get("/api/v1/tasks/{NOT_EXISTING_ID}", NOT_EXISTING_ID)
                 .header("Content-Type", "application/json"))
@@ -168,7 +169,7 @@ public class TaskControllerTest {
     void testUpdateTaskById_UnSuccess() throws Exception {
         Task requestTask = TestTask.getTaskWithoutID();
 
-        when(taskService.update(requestTask, NOT_EXISTING_ID)).thenReturn(null);
+        when(taskService.update(requestTask, NOT_EXISTING_ID)).thenThrow(EntityNotFoundException.class);
 
         mockMvc.perform(put("/api/v1/tasks/{NOT_EXISTING_ID}", NOT_EXISTING_ID)
                         .content("""
@@ -179,7 +180,7 @@ public class TaskControllerTest {
                         }
                         """)
                         .header("Content-Type", "application/json"))
-                .andExpect(status().isNotFound());
+                        .andExpect(status().isNotFound());
 
         verify(taskService).update(requestTask, NOT_EXISTING_ID);
     }

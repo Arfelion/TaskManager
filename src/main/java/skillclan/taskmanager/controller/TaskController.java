@@ -44,9 +44,6 @@ public class TaskController {
     @GetMapping("/{id}")
     public ResponseEntity<TaskDto> getTaskById(@PathVariable (name = "id") int id){
         final Task task = taskService.read(id);
-        if (task == null){
-            throw new EntityNotFoundException("Task with id=" + id + " was not found");
-        }
         return new ResponseEntity<>(taskMapper.taskToTaskDto(task), HttpStatus.OK);
     }
 

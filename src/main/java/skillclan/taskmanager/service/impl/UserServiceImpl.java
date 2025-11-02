@@ -36,7 +36,7 @@ public class UserServiceImpl implements UserService {
     @Cacheable(value = CACHE_NAME, key = "#id")
     @Override
     public User read(int id) {
-        return userRepository.findById(id).orElse(null);
+        return userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User with id=" + id + " was not found"));
     }
 
     @CachePut(value = CACHE_NAME, key = "#user.id")

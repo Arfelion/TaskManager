@@ -7,9 +7,9 @@ public class ErrorResponse {
     private final String detailedErrorMessage;
     private final LocalDateTime timestamp;
 
-    public ErrorResponse(String errorName, String DetailedErrorMessage) {
+    public ErrorResponse(String errorName, String detailedErrorMessage) {
         this.errorName = errorName;
-        this.detailedErrorMessage = DetailedErrorMessage;
+        this.detailedErrorMessage = detailedErrorMessage;
         this.timestamp = LocalDateTime.now();
     }
 
