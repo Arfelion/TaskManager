@@ -4,6 +4,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import skillclan.taskmanager.exception.EntityNotFoundException;
 import skillclan.taskmanager.model.User;
 import skillclan.taskmanager.repository.UserRepository;
 import skillclan.taskmanager.service.UserService;
@@ -35,15 +36,18 @@ public class UserServiceImpl implements UserService {
     @Cacheable(value = CACHE_NAME, key = "#id")
     @Override
     public User read(int id) {
-        return userRepository.findById(id).orElse(null);
+        return userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User with id=" + id + " was not found"));
     }
 
     @CachePut(value = CACHE_NAME, key = "#user.id")
     @Override
     public User update(User user, int id) {
         boolean updated = userRepository.update(user, id);
+        if (!updated){
+            throw new EntityNotFoundException("User with id=" + id + " was not found");
+        }
         user.setId(id);
-        return updated ? user : null;
+        return user;
     }
 
     @CacheEvict(value = CACHE_NAME, key = "#id")

@@ -1,6 +1,7 @@
 package skillclan.taskmanager.service.impl;
 
 import org.springframework.stereotype.Service;
+import skillclan.taskmanager.exception.EntityNotFoundException;
 import skillclan.taskmanager.model.Task;
 import skillclan.taskmanager.model.User;
 import skillclan.taskmanager.repository.TaskRepository;
@@ -30,14 +31,14 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public Task read(int id) {
-        return taskRepository.findById(id).orElse(null);
+        return taskRepository.findById(id).orElseThrow(()-> new EntityNotFoundException("Task with id=" + id + " was not found"));
     }
 
     @Override
     public Task update(Task task, int id) {
         Task taskFromDB = taskRepository.findById(id).orElse(null);
         if (taskFromDB == null){
-            return null;
+            throw new EntityNotFoundException("Task with id=" + id + " was not found");
         }
         if (taskFromDB.getStatus() != task.getStatus() ||
             !taskFromDB.getTitle().equals(task.getTitle()) ||

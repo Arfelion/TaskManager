@@ -5,6 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import skillclan.taskmanager.exception.EntityNotFoundException;
 import skillclan.taskmanager.model.Task;
 import skillclan.taskmanager.model.TaskStatus;
 import skillclan.taskmanager.repository.TaskRepository;
@@ -66,7 +67,7 @@ public class TaskServiceImplTest {
     void testReadNoExistingTask(){
         when(taskRepository.findById(NOT_EXISTING_ID)).thenReturn(Optional.empty());
 
-        assertNull(taskService.read(NOT_EXISTING_ID));
+        assertThrowsExactly(EntityNotFoundException.class, () -> taskService.read(NOT_EXISTING_ID));
         verify(taskRepository).findById(NOT_EXISTING_ID);
     }
 
@@ -143,9 +144,7 @@ public class TaskServiceImplTest {
 
         when(taskRepository.findById(NOT_EXISTING_ID)).thenReturn(Optional.empty());
 
-        Task updatedTask = taskService.update(requestTask, NOT_EXISTING_ID);
-
-        assertNull(updatedTask);
+        assertThrowsExactly(EntityNotFoundException.class, () -> taskService.update(requestTask, NOT_EXISTING_ID));
         verify(taskRepository).findById(NOT_EXISTING_ID);
         verify(taskRepository, times(0)).update(any(Task.class), anyInt());
         verify(taskRepository, times(0)).assignTaskToUsers(anyInt(), anyList());

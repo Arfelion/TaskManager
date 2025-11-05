@@ -6,6 +6,8 @@ services:
     ports:
       - "8080:8080"
     depends_on:
+      broker:
+        condition: service_started
       db:
         condition: service_healthy
       cache:
@@ -17,6 +19,8 @@ services:
       SPRING_DATA_REDIS_HOST: cache
       SPRING_DATA_REDIS_PORT: 6379
       SPRING_PROFILES_ACTIVE: docker
+      KAFKA_BOOTSTRAP_SERVERS: broker:9092
+    networks: [task-manager-net]
   db:
     image: postgres:latest
     ports:
@@ -30,6 +34,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+    networks: [task-manager-net]
   cache:
     image: redis:latest
     ports:
@@ -39,3 +44,28 @@ services:
       interval: 1s
       timeout: 3s
       retries: 30
+    networks: [task-manager-net]
+  broker:
+    image: apache/kafka:latest
+    ports:
+      - "9092:9092"
+    container_name: broker
+    hostname: broker
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://broker:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@broker:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_NUM_PARTITIONS: 3
+    networks: [task-manager-net]
+    command: ["/bin/bash", "-c", "KAFKA_CLUSTER_ID=\"$(/bin/kafka-storage random-uuid)\" && /bin/kafka-storage format -t \"$$KAFKA_CLUSTER_ID\" -c /etc/kafka/server.properties && /bin/kafka-server-start /etc/kafka/server.properties --override listeners=PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093 --override advertised.listeners=PLAINTEXT://broker:9092 --override controller.quorum.voters=1@broker:9093 --override controller.listener.names=CONTROLLER --override process.roles=broker,controller --override node.id=1"]
+networks:
+  task-manager-net:
+    driver: bridge

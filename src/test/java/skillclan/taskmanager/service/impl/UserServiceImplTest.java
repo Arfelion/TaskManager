@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import skillclan.taskmanager.exception.EntityNotFoundException;
 import skillclan.taskmanager.model.User;
 import skillclan.taskmanager.repository.UserRepository;
 import skillclan.taskmanager.testutils.user.TestUser;
@@ -64,8 +65,8 @@ public class UserServiceImplTest {
     @Test
     void testReadNotExistingUser() {
         when(userRepository.findById(NOT_EXISTING_ID)).thenReturn(Optional.empty());
-
-        assertNull(userService.read(NOT_EXISTING_ID));
+        //ToDo assertThrowsExactly() - помилки
+        assertThrowsExactly(EntityNotFoundException.class, () -> userService.read(NOT_EXISTING_ID));
         verify(userRepository).findById(NOT_EXISTING_ID);
     }
 
@@ -97,9 +98,7 @@ public class UserServiceImplTest {
 
         when(userRepository.update(user, NOT_EXISTING_ID)).thenReturn(false);
 
-        User results = userService.update(user, NOT_EXISTING_ID);
-
-        assertNull(results);
+        assertThrowsExactly(EntityNotFoundException.class, () -> userService.update(user, NOT_EXISTING_ID));
         verify(userRepository).update(user, NOT_EXISTING_ID);
     }
 
