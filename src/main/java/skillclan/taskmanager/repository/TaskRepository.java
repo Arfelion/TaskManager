@@ -81,7 +81,7 @@ public class TaskRepository {
         params.addValue("id", id);
         params.addValue("title", task.getTitle());
         params.addValue("description", task.getDescription());
-        params.addValue("status", task.getTitle());
+        params.addValue("status", task.getStatus().name());
         try {
             return jdbcTemplate.update(sql, params) > 0;
         } catch (DataAccessException e){

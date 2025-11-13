@@ -6,9 +6,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import skillclan.taskmanager.exception.EntityNotFoundException;
+import skillclan.taskmanager.mapper.TaskMapper;
 import skillclan.taskmanager.model.Task;
 import skillclan.taskmanager.model.TaskStatus;
 import skillclan.taskmanager.repository.TaskRepository;
+import skillclan.taskmanager.service.NotificationProducer;
 import skillclan.taskmanager.testutils.task.TestTask;
 import skillclan.taskmanager.testutils.user.TestUser;
 
@@ -25,6 +27,10 @@ public class TaskServiceImplTest {
 
     @Mock
     private TaskRepository taskRepository;
+    @Mock
+    private TaskMapper taskMapper;
+    @Mock
+    private NotificationProducer producer;
     @InjectMocks
     private TaskServiceImpl taskService;
     private static final Integer ID = 10;

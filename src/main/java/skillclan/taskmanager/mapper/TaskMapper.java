@@ -4,6 +4,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.NullValueCheckStrategy;
 import skillclan.taskmanager.dto.TaskDto;
+import skillclan.taskmanager.dto.TaskNotificationDto;
 import skillclan.taskmanager.model.Task;
 
 @Mapper(componentModel = "spring", nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
@@ -13,5 +14,7 @@ public interface TaskMapper {
 
     @Mapping(target = "id", ignore = true)
     Task taskDtoToTask(TaskDto taskDto);
+
+    TaskNotificationDto taskNotificationDto(Task task);
 
 }

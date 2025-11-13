@@ -4,12 +4,15 @@ package skillclan.taskmanager.controller;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import skillclan.taskmanager.dto.TaskDto;
 import skillclan.taskmanager.exception.EntityNotFoundException;
 import skillclan.taskmanager.mapper.TaskMapper;
 import skillclan.taskmanager.model.Task;
 import skillclan.taskmanager.service.TaskService;
+import skillclan.taskmanager.validation.OnCreate;
+import skillclan.taskmanager.validation.OnUpdate;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,7 +30,7 @@ public class TaskController {
     }
 
     @PostMapping
-    public ResponseEntity<TaskDto> createTask(@RequestBody @Valid TaskDto taskDto){
+    public ResponseEntity<TaskDto> createTask(@RequestBody @Validated(OnCreate.class) TaskDto taskDto){
         final Task task = taskMapper.taskDtoToTask(taskDto);
         final Task createdTask = taskService.create(task);
         return new ResponseEntity<>(taskMapper.taskToTaskDto(createdTask), HttpStatus.CREATED);
@@ -48,7 +51,7 @@ public class TaskController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<TaskDto> updateTaskById(@RequestBody @Valid TaskDto taskDto, @PathVariable (name = "id") int id){
+    public ResponseEntity<TaskDto> updateTaskById(@RequestBody @Validated(OnUpdate.class) TaskDto taskDto, @PathVariable (name = "id") int id){
         final Task task = taskMapper.taskDtoToTask(taskDto);
         final Task updatedTask = taskService.update(task, id);
         return new ResponseEntity<>(taskMapper.taskToTaskDto(updatedTask), HttpStatus.OK);

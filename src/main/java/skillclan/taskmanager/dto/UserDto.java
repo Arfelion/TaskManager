@@ -2,11 +2,16 @@ package skillclan.taskmanager.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
+import skillclan.taskmanager.validation.OnCreate;
+import skillclan.taskmanager.validation.OnUpdate;
 import skillclan.taskmanager.validation.UkraineMSISDN;
 
 public class UserDto {
-    @Null(message = "Id must be null")
+
+    @Null(groups = OnCreate.class, message = "ID must be null for creation.")
+    @NotNull(groups = OnUpdate.class, message = "ID cannot be null for update.")
     private Integer id;
 
     @NotBlank(message = "Name cannot be empty")
